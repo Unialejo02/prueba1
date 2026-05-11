@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UNISCA · Sistema de Líderes</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #1B3A6B;
+  --navy-dark: #0f2244;
+  --navy-light: #2a5298;
+  --gold: #E8A020;
+  --gold-light: #f5c355;
+  --red: #C0392B;
+  --white: #ffffff;
+  --gray-50: #f8fafc;
+  --gray-100: #f1f5f9;
+  --gray-200: #e2e8f0;
+  --gray-400: #94a3b8;
+  --gray-600: #475569;
+  --gray-800: #1e293b;
+  --success: #10b981;
+  --danger: #ef4444;
+  --font: 'Sora', sans-serif;
+  --mono: 'DM Mono', monospace;
+  --radius: 12px;
+  --shadow: 0 4px 24px rgba(27,58,107,0.10);
+  --shadow-lg: 0 8px 40px rgba(27,58,107,0.18);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  background: var(--gray-50);
+  color: var(--gray-800);
+  min-height: 100vh;
+}
+
+/* ── UTILITIES ─────────────────────────────── */
+.hidden { display: none !important; }
+.mono { font-family: var(--mono); }
+
+/* ── TOAST ─────────────────────────────────── */
+#toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: var(--gray-800); color: #fff;
+  padding: 12px 24px; border-radius: 99px;
+  font-size: 13px; font-weight: 500;
+  z-index: 9999; opacity: 0;
+  transition: opacity .3s;
+  pointer-events: none;
+  white-space: nowrap;
+}
+#toast.show { opacity: 1; }
+
+/* ── LOGIN ─────────────────────────────────── */
+#loginScreen {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy) 50%, var(--navy-light) 100%);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+#loginScreen::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 70% 20%, rgba(232,160,32,0.15) 0%, transparent 60%),
+              radial-gradient(circle at 20% 80%, rgba(255,255,255,0.05) 0%, transparent 50%);
+}
+
+.login-card {
+  background: rgba(255,255,255,0.97);
+  border-radius: 24px;
+  padding: 48px 40px;
+  width: 100%; max-width: 400px;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  z-index: 1;
+}
+
+.login-logo {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.login-logo .shield {
+  width: 64px; height: 64px;
+  background: linear-gradient(135deg, var(--navy), var(--navy-light));
+  border-radius: 16px;
+  display: inline-flex; align-items: center; justify-content: center;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 16px rgba(27,58,107,0.3);
+}
+
+.login-logo .shield svg { width: 32px; height: 32px; fill: white; }
+
+.login-logo h1 {
+  font-size: 20px; font-weight: 700;
+  color: var(--navy);
+  line-height: 1.2;
+}
+
+.login-logo p {
+  font-size: 12px; color: var(--gray-400);
+  margin-top: 4px; font-weight: 400;
+}
+
+.login-form label {
+  display: block; font-size: 12px; font-weight: 600;
+  color: var(--gray-600); margin-bottom: 6px;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+
+.login-form input {
+  width: 100%; padding: 12px 16px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius); font-size: 14px;
+  font-family: var(--font);
+  background: var(--gray-50);
+  color: var(--gray-800);
+  transition: border .2s, box-shadow .2s;
+  margin-bottom: 16px;
+}
+
+.login-form input:focus {
+  outline: none;
+  border-color: var(--navy);
+  box-shadow: 0 0 0 3px rgba(27,58,107,0.1);
+  background: white;
+}
+
+.btn-primary {
+  width: 100%; padding: 13px;
+  background: linear-gradient(135deg, var(--navy), var(--navy-light));
+  color: white; border: none;
+  border-radius: var(--radius);
+  font-size: 14px; font-weight: 600;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: opacity .2s, transform .1s;
+  margin-top: 4px;
+}
+.btn-primary:hover { opacity: .92; }
+.btn-primary:active { transform: scale(.98); }
+
+.login-note {
+  text-align: center; margin-top: 20px;
+  font-size: 11px; color: var(--gray-400);
+}
+
+/* ── APP SHELL ─────────────────────────────── */
+#app { display: none; min-height: 100vh; flex-direction: column; }
+#app.active { display: flex; }
+
+/* ── TOP BAR ───────────────────────────────── */
+.topbar {
+  background: var(--navy-dark);
+  color: white;
+  padding: 0 20px;
+  height: 58px;
+  display: flex; align-items: center;
+  gap: 12px;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+}
+
+.topbar-logo {
+  width: 32px; height: 32px;
+  background: var(--gold);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.topbar-logo svg { width: 16px; height: 16px; fill: var(--navy-dark); }
+
+.topbar-title { font-size: 14px; font-weight: 600; flex: 1; }
+.topbar-sub { font-size: 11px; color: rgba(255,255,255,0.5); }
+
+.topbar-user {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 99px;
+  padding: 6px 14px 6px 8px;
+  cursor: pointer;
+}
+
+.avatar {
+  width: 28px; height: 28px;
+  background: var(--gold);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: var(--navy-dark);
+}
+
+.topbar-user span { font-size: 12px; font-weight: 500; }
+
+.btn-logout {
+  background: rgba(255,255,255,0.1);
+  border: none; color: white;
+  padding: 6px 12px; border-radius: 8px;
+  font-size: 12px; cursor: pointer;
+  font-family: var(--font);
+  transition: background .2s;
+}
+.btn-logout:hover { background: rgba(255,255,255,0.2); }
+
+/* ── MAIN CONTENT ──────────────────────────── */
+.main { flex: 1; padding: 24px 20px; max-width: 680px; margin: 0 auto; width: 100%; }
+
+/* ── STATS BAR ─────────────────────────────── */
+.stats {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 12px; margin-bottom: 24px;
+}
+
+.stat-card {
+  background: white; border-radius: var(--radius);
+  padding: 16px; text-align: center;
+  box-shadow: var(--shadow);
+  border-top: 3px solid var(--navy);
+}
+
+.stat-card.gold { border-top-color: var(--gold); }
+.stat-card.green { border-top-color: var(--success); }
+
+.stat-num {
+  font-size: 28px; font-weight: 700;
+  color: var(--navy); line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.stat-card.gold .stat-num { color: var(--gold); }
+.stat-card.green .stat-num { color: var(--success); }
+
+.stat-label { font-size: 11px; color: var(--gray-400); margin-top: 4px; font-weight: 500; }
+
+/* ── SECTION HEADER ────────────────────────── */
+.section-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.section-head h2 { font-size: 16px; font-weight: 600; color: var(--navy); }
+
+.btn-add {
+  background: var(--gold); color: var(--navy-dark);
+  border: none; border-radius: var(--radius);
+  padding: 9px 18px;
+  font-size: 13px; font-weight: 600;
+  font-family: var(--font);
+  cursor: pointer;
+  display: flex; align-items: center; gap: 6px;
+  transition: background .2s, transform .1s;
+}
+.btn-add:hover { background: var(--gold-light); }
+.btn-add:active { transform: scale(.97); }
+
+/* ── CONTACT CARDS ─────────────────────────── */
+.contacts-list { display: flex; flex-direction: column; gap: 12px; }
+
+.contact-card {
+  background: white;
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+  border-left: 4px solid var(--gray-200);
+  transition: box-shadow .2s, border-color .2s;
+  cursor: pointer;
+}
+
+.contact-card:hover { box-shadow: var(--shadow-lg); border-left-color: var(--navy); }
+.contact-card.voted { border-left-color: var(--success); }
+.contact-card.pending { border-left-color: var(--gold); }
+
+.contact-header { display: flex; align-items: center; gap: 12px; }
+
+.contact-avatar {
+  width: 42px; height: 42px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--navy), var(--navy-light));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 700; color: white;
+  flex-shrink: 0;
+}
+
+.contact-info { flex: 1; min-width: 0; }
+.contact-name { font-size: 14px; font-weight: 600; color: var(--gray-800); }
+.contact-doc { font-size: 11px; color: var(--gray-400); font-family: var(--mono); margin-top: 2px; }
+
+.badge {
+  font-size: 10px; font-weight: 600;
+  padding: 4px 10px; border-radius: 99px;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.badge-voted { background: #d1fae5; color: #065f46; }
+.badge-pending { background: #fef3c7; color: #92400e; }
+.badge-no-cert { background: #fee2e2; color: #991b1b; }
+
+.contact-meta {
+  display: flex; gap: 16px; margin-top: 10px;
+  padding-top: 10px; border-top: 1px solid var(--gray-100);
+}
+
+.meta-item { font-size: 11px; color: var(--gray-400); }
+.meta-item strong { color: var(--gray-600); }
+
+.contact-actions {
+  display: flex; gap: 8px; margin-top: 12px;
+}
+
+.btn-sm {
+  flex: 1; padding: 8px;
+  border-radius: 8px; border: 1.5px solid var(--gray-200);
+  font-size: 12px; font-weight: 500; font-family: var(--font);
+  cursor: pointer; background: white; color: var(--gray-600);
+  transition: all .15s;
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+}
+.btn-sm:hover { border-color: var(--navy); color: var(--navy); }
+.btn-sm.danger:hover { border-color: var(--danger); color: var(--danger); }
+.btn-sm.success { border-color: var(--success); color: var(--success); background: #f0fdf4; }
+
+.files-preview {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px;
+}
+
+.file-chip {
+  background: var(--gray-100); border-radius: 6px;
+  padding: 4px 10px; font-size: 11px;
+  color: var(--gray-600); font-family: var(--mono);
+  display: flex; align-items: center; gap: 4px;
+  cursor: pointer; transition: background .15s;
+}
+.file-chip:hover { background: var(--gray-200); }
+
+/* ── MODAL ─────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(15,34,68,0.6);
+  backdrop-filter: blur(4px);
+  z-index: 500;
+  display: flex; align-items: flex-end; justify-content: center;
+  padding: 0;
+}
+
+@media (min-width: 600px) {
+  .modal-overlay { align-items: center; padding: 24px; }
+}
+
+.modal {
+  background: white;
+  border-radius: 24px 24px 0 0;
+  width: 100%; max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 28px 24px 40px;
+  animation: slideUp .25s ease;
+}
+
+@media (min-width: 600px) {
+  .modal { border-radius: 24px; padding: 32px; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(40px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-title {
+  font-size: 18px; font-weight: 700; color: var(--navy);
+  margin-bottom: 20px; display: flex; align-items: center; gap: 10px;
+}
+
+.modal-title .dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--gold);
+}
+
+.form-group { margin-bottom: 16px; }
+
+.form-group label {
+  display: block; font-size: 11px; font-weight: 600;
+  color: var(--gray-600); margin-bottom: 6px;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%; padding: 11px 14px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius); font-size: 14px;
+  font-family: var(--font); color: var(--gray-800);
+  background: var(--gray-50);
+  transition: border .2s, box-shadow .2s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none; border-color: var(--navy);
+  box-shadow: 0 0 0 3px rgba(27,58,107,0.1);
+  background: white;
+}
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* File upload zone */
+.upload-zone {
+  border: 2px dashed var(--gray-200);
+  border-radius: var(--radius);
+  padding: 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .2s, background .2s;
+  background: var(--gray-50);
+}
+.upload-zone:hover { border-color: var(--navy); background: #f0f4ff; }
+.upload-zone.dragover { border-color: var(--gold); background: #fffbf0; }
+
+.upload-zone input { display: none; }
+.upload-icon { font-size: 28px; margin-bottom: 8px; }
+.upload-zone p { font-size: 13px; color: var(--gray-400); }
+.upload-zone strong { color: var(--navy); }
+
+.uploaded-files { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+
+.uploaded-file {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--gray-100); border-radius: 8px; padding: 8px 12px;
+}
+
+.uploaded-file .fname { flex: 1; font-size: 12px; font-family: var(--mono); color: var(--gray-600); }
+.uploaded-file .fsize { font-size: 11px; color: var(--gray-400); }
+.uploaded-file .fdelete { background: none; border: none; cursor: pointer; color: var(--danger); font-size: 16px; padding: 0 4px; }
+
+.modal-actions { display: flex; gap: 10px; margin-top: 24px; }
+
+.btn-cancel {
+  flex: 1; padding: 12px;
+  border: 1.5px solid var(--gray-200); background: white;
+  color: var(--gray-600); border-radius: var(--radius);
+  font-size: 14px; font-weight: 600; font-family: var(--font);
+  cursor: pointer; transition: all .15s;
+}
+.btn-cancel:hover { border-color: var(--gray-400); }
+
+.btn-save {
+  flex: 2; padding: 12px;
+  background: linear-gradient(135deg, var(--navy), var(--navy-light));
+  color: white; border: none;
+  border-radius: var(--radius);
+  font-size: 14px; font-weight: 600; font-family: var(--font);
+  cursor: pointer; transition: opacity .2s;
+}
+.btn-save:hover { opacity: .9; }
+.btn-save:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ── EMPTY STATE ───────────────────────────── */
+.empty {
+  text-align: center; padding: 48px 24px;
+  background: white; border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.empty-icon { font-size: 48px; margin-bottom: 16px; }
+.empty h3 { font-size: 16px; font-weight: 600; color: var(--navy); margin-bottom: 8px; }
+.empty p { font-size: 13px; color: var(--gray-400); line-height: 1.6; }
+
+/* ── LOADING ───────────────────────────────── */
+.spinner {
+  display: inline-block;
+  width: 18px; height: 18px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loading-overlay {
+  position: fixed; inset: 0;
+  background: rgba(255,255,255,0.8);
+  backdrop-filter: blur(2px);
+  z-index: 999;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 12px;
+}
+.loading-overlay p { font-size: 13px; color: var(--gray-600); }
+
+/* ── CONFIG NOTICE ─────────────────────────── */
+.config-notice {
+  background: #fef3c7;
+  border: 1.5px solid var(--gold);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  color: #92400e;
+  line-height: 1.6;
+}
+.config-notice strong { display: block; margin-bottom: 4px; font-size: 14px; }
+.config-notice code {
+  background: rgba(0,0,0,0.08);
+  padding: 1px 6px; border-radius: 4px;
+  font-family: var(--mono); font-size: 12px;
+}
+
+/* ── CERT UPLOAD SECTION ───────────────────── */
+.cert-section {
+  margin-top: 16px; padding-top: 16px;
+  border-top: 1.5px dashed var(--gray-200);
+}
+.cert-section h4 { font-size: 12px; font-weight: 600; color: var(--gray-600); margin-bottom: 10px; text-transform: uppercase; letter-spacing: .5px; }
+
+/* ── SEARCH ────────────────────────────────── */
+.search-bar {
+  width: 100%;
+  padding: 11px 16px 11px 40px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius);
+  font-size: 14px; font-family: var(--font);
+  background: white;
+  margin-bottom: 16px;
+  position: relative;
+}
+.search-wrap { position: relative; margin-bottom: 16px; }
+.search-wrap svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; fill: none; stroke: var(--gray-400); stroke-width: 2; }
+.search-bar:focus { outline: none; border-color: var(--navy); }
+
+/* ── FILTER TABS ───────────────────────────── */
+.filter-tabs { display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 2px; }
+.filter-tab {
+  padding: 6px 14px; border-radius: 99px;
+  font-size: 12px; font-weight: 600;
+  border: 1.5px solid var(--gray-200);
+  background: white; color: var(--gray-400);
+  cursor: pointer; white-space: nowrap;
+  transition: all .15s;
+}
+.filter-tab.active { background: var(--navy); border-color: var(--navy); color: white; }
+
+@media (max-width: 400px) {
+  .form-row { grid-template-columns: 1fr; }
+  .stats { grid-template-columns: 1fr 1fr 1fr; }
+  .stat-num { font-size: 22px; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- LOADING -->
+<div id="loading" class="loading-overlay hidden">
+  <div class="spinner" style="border-color:rgba(27,58,107,.2);border-top-color:var(--navy);width:32px;height:32px;border-width:3px"></div>
+  <p id="loadingMsg">Guardando...</p>
+</div>
+
+<!-- ══ LOGIN ══════════════════════════════════════════════════════ -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="shield">
+        <svg viewBox="0 0 24 24"><path d="M12 2L4 6v6c0 5.25 3.5 10.15 8 11.35C16.5 22.15 20 17.25 20 12V6L12 2z"/></svg>
+      </div>
+      <h1>UNISCA · Líderes</h1>
+      <p>Sistema de gestión electoral</p>
+    </div>
+    <div class="login-form">
+      <div class="form-group">
+        <label>Usuario</label>
+        <input id="loginUser" type="text" placeholder="Tu nombre de usuario" autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input id="loginPass" type="password" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="btn-primary" onclick="doLogin()">Ingresar al sistema</button>
+    </div>
+    <p class="login-note">Acceso exclusivo para líderes registrados · UNISCA 2025</p>
+  </div>
+</div>
+
+<!-- ══ APP ════════════════════════════════════════════════════════ -->
+<div id="app">
+  <!-- Top Bar -->
+  <div class="topbar">
+    <div class="topbar-logo">
+      <svg viewBox="0 0 24 24"><path d="M12 2L4 6v6c0 5.25 3.5 10.15 8 11.35C16.5 22.15 20 17.25 20 12V6L12 2z"/></svg>
+    </div>
+    <div style="flex:1">
+      <div class="topbar-title">UNISCA · Líderes</div>
+    </div>
+    <div class="topbar-user">
+      <div class="avatar" id="userAvatar">?</div>
+      <span id="userName">Líder</span>
+    </div>
+    <button class="btn-logout" onclick="doLogout()">Salir</button>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+
+    <!-- Config notice (shown if GAS URL not configured) -->
+    <div class="config-notice" id="configNotice">
+      <strong>⚠️ Configuración pendiente</strong>
+      Aún no has conectado Google Sheets. Edita este archivo HTML y reemplaza <code>TU_URL_AQUI</code> con la URL de tu Google Apps Script. Los datos se guardan localmente por ahora.
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-num" id="statTotal">0</div>
+        <div class="stat-label">Contactos</div>
+      </div>
+      <div class="stat-card gold">
+        <div class="stat-num" id="statCert">0</div>
+        <div class="stat-label">Con certificado</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-num" id="statVoted">0</div>
+        <div class="stat-label">Confirmados</div>
+      </div>
+    </div>
+
+    <!-- Contacts header -->
+    <div class="section-head">
+      <h2>Mis contactos</h2>
+      <button class="btn-add" onclick="openModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14M5 12h14"/></svg>
+        Agregar
+      </button>
+    </div>
+
+    <!-- Search -->
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input class="search-bar" id="searchInput" placeholder="Buscar por nombre o cédula..." oninput="renderContacts()">
+    </div>
+
+    <!-- Filter tabs -->
+    <div class="filter-tabs">
+      <div class="filter-tab active" data-filter="all" onclick="setFilter('all',this)">Todos</div>
+      <div class="filter-tab" data-filter="voted" onclick="setFilter('voted',this)">Confirmados ✓</div>
+      <div class="filter-tab" data-filter="pending" onclick="setFilter('pending',this)">Pendientes</div>
+      <div class="filter-tab" data-filter="cert" onclick="setFilter('cert',this)">Con certificado</div>
+    </div>
+
+    <!-- Contacts list -->
+    <div class="contacts-list" id="contactsList"></div>
+  </div>
+</div>
+
+<!-- ══ MODAL AGREGAR/EDITAR ═══════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-title">
+      <div class="dot"></div>
+      <span id="modalTitleText">Nuevo contacto</span>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Nombres *</label>
+        <input id="fNombres" placeholder="Nombres">
+      </div>
+      <div class="form-group">
+        <label>Apellidos *</label>
+        <input id="fApellidos" placeholder="Apellidos">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Tipo Doc.</label>
+        <select id="fTipoDoc">
+          <option value="CC">CC</option>
+          <option value="TI">TI</option>
+          <option value="CE">CE</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>N.° Documento *</label>
+        <input id="fDoc" placeholder="Número" type="number">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Celular</label>
+        <input id="fCel" placeholder="310..." type="tel">
+      </div>
+      <div class="form-group">
+        <label>Municipio</label>
+        <input id="fMunicipio" placeholder="Cali">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Barrio / Vereda</label>
+        <input id="fBarrio" placeholder="Barrio">
+      </div>
+      <div class="form-group">
+        <label>Puesto de votación</label>
+        <input id="fPuesto" placeholder="Nombre del puesto">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Estado</label>
+      <select id="fEstado">
+        <option value="pending">Pendiente de confirmar</option>
+        <option value="voted">Confirmado que vota ✓</option>
+      </select>
+    </div>
+
+    <!-- Archivos -->
+    <div class="cert-section">
+      <h4>📎 Documentos y certificados electorales</h4>
+      <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropFiles(event)">
+        <input type="file" id="fileInput" multiple accept=".pdf,.jpg,.jpeg,.png,.webp" onchange="handleFiles(this.files)">
+        <div class="upload-icon">📄</div>
+        <p><strong>Toca para subir archivos</strong><br>PDF, JPG, PNG · Máx. 5MB por archivo</p>
+      </div>
+      <div class="uploaded-files" id="uploadedFiles"></div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-save" id="btnSave" onclick="saveContact()">Guardar contacto</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════
+//  CONFIGURACIÓN — Reemplaza con tu URL de Google Apps Script
+// ══════════════════════════════════════════════════════════════════
+const GAS_URL = 'TU_URL_AQUI'; // ← pega aquí tu URL después de publicar el script
+
+// ══════════════════════════════════════════════════════════════════
+//  LÍDERES — Agrega aquí los líderes y sus contraseñas
+// ══════════════════════════════════════════════════════════════════
+const LIDERES = {
+  'lider1': { pass: 'clave123', nombre: 'Carlos Martínez', id: 'L001' },
+  'lider2': { pass: 'clave456', nombre: 'Ana Gómez',       id: 'L002' },
+  'lider3': { pass: 'clave789', nombre: 'Pedro López',     id: 'L003' },
+  // Agrega más líderes aquí...
+};
+
+// ══════════════════════════════════════════════════════════════════
+//  ESTADO GLOBAL
+// ══════════════════════════════════════════════════════════════════
+let currentLeader = null;
+let contacts = [];
+let editingId = null;
+let pendingFiles = []; // { name, size, base64 }
+let activeFilter = 'all';
+
+const gasReady = GAS_URL !== 'TU_URL_AQUI';
+
+// ══════════════════════════════════════════════════════════════════
+//  AUTH
+// ══════════════════════════════════════════════════════════════════
+function doLogin() {
+  const user = document.getElementById('loginUser').value.trim().toLowerCase();
+  const pass = document.getElementById('loginPass').value;
+  if (!user || !pass) return toast('Ingresa usuario y contraseña');
+
+  const leader = LIDERES[user];
+  if (!leader || leader.pass !== pass) return toast('Usuario o contraseña incorrectos');
+
+  currentLeader = { ...leader, user };
+  sessionStorage.setItem('lider', JSON.stringify(currentLeader));
+  startApp();
+}
+
+function doLogout() {
+  sessionStorage.removeItem('lider');
+  currentLeader = null; contacts = [];
+  document.getElementById('loginScreen').style.display = '';
+  document.getElementById('app').classList.remove('active');
+}
+
+function startApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').classList.add('active');
+  document.getElementById('userName').textContent = currentLeader.nombre.split(' ')[0];
+  document.getElementById('userAvatar').textContent = currentLeader.nombre.charAt(0).toUpperCase();
+  if (gasReady) document.getElementById('configNotice').classList.add('hidden');
+  loadContacts();
+}
+
+// Check session on load
+window.onload = () => {
+  const saved = sessionStorage.getItem('lider');
+  if (saved) { currentLeader = JSON.parse(saved); startApp(); }
+  document.getElementById('loginUser').addEventListener('keydown', e => e.key === 'Enter' && document.getElementById('loginPass').focus());
+  document.getElementById('loginPass').addEventListener('keydown', e => e.key === 'Enter' && doLogin());
+};
+
+// ══════════════════════════════════════════════════════════════════
+//  DATA — LOCAL STORAGE + GOOGLE SHEETS
+// ══════════════════════════════════════════════════════════════════
+function storageKey() { return `unisca_${currentLeader.id}`; }
+
+function loadContacts() {
+  // Load from localStorage first
+  const local = localStorage.getItem(storageKey());
+  contacts = local ? JSON.parse(local) : [];
+
+  if (gasReady) {
+    // Sync from Google Sheets
+    showLoading('Sincronizando...');
+    fetch(`${GAS_URL}?action=get&lider=${currentLeader.id}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.contacts) {
+          contacts = data.contacts;
+          localStorage.setItem(storageKey(), JSON.stringify(contacts));
+        }
+        hideLoading();
+        renderContacts();
+        updateStats();
+      })
+      .catch(() => { hideLoading(); renderContacts(); updateStats(); });
+  } else {
+    renderContacts();
+    updateStats();
+  }
+}
+
+async function saveToSheet(contact) {
+  if (!gasReady) return true;
+  try {
+    const resp = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'save', lider: currentLeader.id, liderNombre: currentLeader.nombre, contact })
+    });
+    const data = await resp.json();
+    return data.ok;
+  } catch { return false; }
+}
+
+async function deleteFromSheet(id) {
+  if (!gasReady) return true;
+  try {
+    const resp = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'delete', lider: currentLeader.id, id })
+    });
+    const data = await resp.json();
+    return data.ok;
+  } catch { return false; }
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  CONTACTS — CRUD
+// ══════════════════════════════════════════════════════════════════
+async function saveContact() {
+  const nombres = document.getElementById('fNombres').value.trim();
+  const apellidos = document.getElementById('fApellidos').value.trim();
+  const doc = document.getElementById('fDoc').value.trim();
+
+  if (!nombres || !apellidos || !doc) return toast('Nombre y documento son obligatorios');
+
+  const contact = {
+    id: editingId || `C${Date.now()}`,
+    nombres, apellidos,
+    tipoDoc: document.getElementById('fTipoDoc').value,
+    doc,
+    celular: document.getElementById('fCel').value.trim(),
+    municipio: document.getElementById('fMunicipio').value.trim(),
+    barrio: document.getElementById('fBarrio').value.trim(),
+    puesto: document.getElementById('fPuesto').value.trim(),
+    estado: document.getElementById('fEstado').value,
+    files: pendingFiles.map(f => ({ name: f.name, size: f.size, data: f.base64 })),
+    fecha: new Date().toLocaleDateString('es-CO'),
+    lider: currentLeader.id,
+  };
+
+  // Merge files if editing
+  if (editingId) {
+    const prev = contacts.find(c => c.id === editingId);
+    if (prev && prev.files) {
+      const existingNames = pendingFiles.map(f => f.name);
+      const kept = prev.files.filter(f => !existingNames.includes(f.name));
+      contact.files = [...kept, ...contact.files];
+    }
+  }
+
+  document.getElementById('btnSave').disabled = true;
+  document.getElementById('btnSave').innerHTML = '<div class="spinner"></div>';
+
+  if (gasReady) showLoading('Guardando en Google Sheets...');
+
+  const ok = await saveToSheet(contact);
+
+  if (editingId) {
+    const idx = contacts.findIndex(c => c.id === editingId);
+    if (idx >= 0) contacts[idx] = contact; else contacts.push(contact);
+  } else {
+    contacts.push(contact);
+  }
+
+  localStorage.setItem(storageKey(), JSON.stringify(contacts));
+  hideLoading();
+  closeModal();
+  renderContacts();
+  updateStats();
+  toast(editingId ? 'Contacto actualizado ✓' : 'Contacto guardado ✓');
+}
+
+async function deleteContact(id) {
+  if (!confirm('¿Eliminar este contacto?')) return;
+  showLoading('Eliminando...');
+  await deleteFromSheet(id);
+  contacts = contacts.filter(c => c.id !== id);
+  localStorage.setItem(storageKey(), JSON.stringify(contacts));
+  hideLoading();
+  renderContacts();
+  updateStats();
+  toast('Contacto eliminado');
+}
+
+async function toggleVoted(id) {
+  const c = contacts.find(x => x.id === id);
+  if (!c) return;
+  c.estado = c.estado === 'voted' ? 'pending' : 'voted';
+  showLoading('Actualizando...');
+  await saveToSheet(c);
+  localStorage.setItem(storageKey(), JSON.stringify(contacts));
+  hideLoading();
+  renderContacts();
+  updateStats();
+  toast(c.estado === 'voted' ? 'Marcado como confirmado ✓' : 'Marcado como pendiente');
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════════════════════════════════
+function setFilter(f, el) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderContacts();
+}
+
+function renderContacts() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  let list = contacts.filter(c => c.lider === currentLeader.id);
+
+  if (q) list = list.filter(c =>
+    `${c.nombres} ${c.apellidos}`.toLowerCase().includes(q) ||
+    c.doc.includes(q)
+  );
+
+  if (activeFilter === 'voted') list = list.filter(c => c.estado === 'voted');
+  if (activeFilter === 'pending') list = list.filter(c => c.estado !== 'voted');
+  if (activeFilter === 'cert') list = list.filter(c => c.files && c.files.length > 0);
+
+  const container = document.getElementById('contactsList');
+
+  if (list.length === 0) {
+    container.innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">👥</div>
+        <h3>${q ? 'Sin resultados' : 'Sin contactos aún'}</h3>
+        <p>${q ? 'No se encontró ningún contacto con esa búsqueda.' : 'Agrega tu primer contacto tocando el botón <strong>Agregar</strong>.'}</p>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = list.map(c => {
+    const initials = (c.nombres.charAt(0) + c.apellidos.charAt(0)).toUpperCase();
+    const voted = c.estado === 'voted';
+    const hasCert = c.files && c.files.length > 0;
+    const badge = voted
+      ? `<span class="badge badge-voted">Confirmado</span>`
+      : hasCert
+        ? `<span class="badge badge-pending">Pendiente</span>`
+        : `<span class="badge badge-no-cert">Sin cert.</span>`;
+
+    const filesHtml = hasCert ? `
+      <div class="files-preview">
+        ${c.files.map(f => `
+          <div class="file-chip" onclick="viewFile('${c.id}','${escHtml(f.name)}')">
+            📄 ${escHtml(f.name)}
+          </div>`).join('')}
+      </div>` : '';
+
+    return `
+      <div class="contact-card ${voted ? 'voted' : 'pending'}" id="card_${c.id}">
+        <div class="contact-header">
+          <div class="contact-avatar">${initials}</div>
+          <div class="contact-info">
+            <div class="contact-name">${escHtml(c.nombres)} ${escHtml(c.apellidos)}</div>
+            <div class="contact-doc">${c.tipoDoc} ${escHtml(c.doc)}</div>
+          </div>
+          ${badge}
+        </div>
+        <div class="contact-meta">
+          ${c.celular ? `<div class="meta-item"><strong>📱</strong> ${escHtml(c.celular)}</div>` : ''}
+          ${c.municipio ? `<div class="meta-item"><strong>📍</strong> ${escHtml(c.municipio)}</div>` : ''}
+          ${c.puesto ? `<div class="meta-item"><strong>🗳️</strong> ${escHtml(c.puesto)}</div>` : ''}
+        </div>
+        ${filesHtml}
+        <div class="contact-actions">
+          <button class="btn-sm ${voted ? 'success' : ''}" onclick="toggleVoted('${c.id}')">
+            ${voted ? '✓ Confirmado' : '◯ Confirmar voto'}
+          </button>
+          <button class="btn-sm" onclick="openModal('${c.id}')">✏️ Editar</button>
+          <button class="btn-sm danger" onclick="deleteContact('${c.id}')">🗑️</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function updateStats() {
+  const mine = contacts.filter(c => c.lider === currentLeader.id);
+  document.getElementById('statTotal').textContent = mine.length;
+  document.getElementById('statCert').textContent = mine.filter(c => c.files && c.files.length > 0).length;
+  document.getElementById('statVoted').textContent = mine.filter(c => c.estado === 'voted').length;
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  MODAL
+// ══════════════════════════════════════════════════════════════════
+function openModal(id = null) {
+  editingId = id;
+  pendingFiles = [];
+  document.getElementById('uploadedFiles').innerHTML = '';
+
+  if (id) {
+    const c = contacts.find(x => x.id === id);
+    if (!c) return;
+    document.getElementById('modalTitleText').textContent = 'Editar contacto';
+    document.getElementById('fNombres').value = c.nombres;
+    document.getElementById('fApellidos').value = c.apellidos;
+    document.getElementById('fTipoDoc').value = c.tipoDoc;
+    document.getElementById('fDoc').value = c.doc;
+    document.getElementById('fCel').value = c.celular || '';
+    document.getElementById('fMunicipio').value = c.municipio || '';
+    document.getElementById('fBarrio').value = c.barrio || '';
+    document.getElementById('fPuesto').value = c.puesto || '';
+    document.getElementById('fEstado').value = c.estado || 'pending';
+    // Show existing files
+    if (c.files && c.files.length) {
+      c.files.forEach(f => addFileChip(f.name, f.size, null, true));
+    }
+  } else {
+    document.getElementById('modalTitleText').textContent = 'Nuevo contacto';
+    ['fNombres','fApellidos','fDoc','fCel','fMunicipio','fBarrio','fPuesto'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('fTipoDoc').value = 'CC';
+    document.getElementById('fEstado').value = 'pending';
+  }
+
+  document.getElementById('btnSave').disabled = false;
+  document.getElementById('btnSave').innerHTML = 'Guardar contacto';
+  document.getElementById('modalOverlay').classList.remove('hidden');
+  document.getElementById('fNombres').focus();
+}
+
+function closeModal() { document.getElementById('modalOverlay').classList.add('hidden'); }
+function closeModalOutside(e) { if (e.target === document.getElementById('modalOverlay')) closeModal(); }
+
+// ══════════════════════════════════════════════════════════════════
+//  FILES
+// ══════════════════════════════════════════════════════════════════
+function handleFiles(files) {
+  [...files].forEach(file => {
+    if (file.size > 5 * 1024 * 1024) { toast(`${file.name} supera 5MB`); return; }
+    const reader = new FileReader();
+    reader.onload = e => {
+      const base64 = e.target.result;
+      pendingFiles.push({ name: file.name, size: file.size, base64 });
+      addFileChip(file.name, file.size, base64);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function addFileChip(name, size, base64, existing = false) {
+  const div = document.createElement('div');
+  div.className = 'uploaded-file';
+  div.innerHTML = `
+    <span style="font-size:18px">${name.endsWith('.pdf') ? '📄' : '🖼️'}</span>
+    <span class="fname">${escHtml(name)}</span>
+    <span class="fsize">${existing ? 'guardado' : formatSize(size)}</span>
+    ${!existing ? `<button class="fdelete" onclick="removeFile('${escHtml(name)}',this.parentElement)">×</button>` : ''}
+  `;
+  document.getElementById('uploadedFiles').appendChild(div);
+}
+
+function removeFile(name, el) {
+  pendingFiles = pendingFiles.filter(f => f.name !== name);
+  el.remove();
+}
+
+function dragOver(e) { e.preventDefault(); document.getElementById('uploadZone').classList.add('dragover'); }
+function dragLeave() { document.getElementById('uploadZone').classList.remove('dragover'); }
+function dropFiles(e) {
+  e.preventDefault();
+  dragLeave();
+  handleFiles(e.dataTransfer.files);
+}
+
+function viewFile(contactId, fileName) {
+  const c = contacts.find(x => x.id === contactId);
+  if (!c) return;
+  const f = c.files.find(x => x.name === fileName);
+  if (!f || !f.data) return toast('Archivo no disponible');
+  const win = window.open();
+  if (f.data.startsWith('data:image')) {
+    win.document.write(`<img src="${f.data}" style="max-width:100%">`);
+  } else {
+    win.location = f.data;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  UI HELPERS
+// ══════════════════════════════════════════════════════════════════
+function showLoading(msg = 'Cargando...') {
+  document.getElementById('loadingMsg').textContent = msg;
+  document.getElementById('loading').classList.remove('hidden');
+}
+function hideLoading() { document.getElementById('loading').classList.add('hidden'); }
+
+function toast(msg, duration = 2800) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + 'B';
+  if (bytes < 1024*1024) return (bytes/1024).toFixed(0) + 'KB';
+  return (bytes/1024/1024).toFixed(1) + 'MB';
+}
+</script>
+</body>
+</html>
