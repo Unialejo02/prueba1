@@ -498,7 +498,7 @@ function doLogin(){
   if(!user||!pass){ err.textContent='Ingresa usuario y contraseña'; return; }
 
   // Check admin
-  if(user === ADMIN.user && pass === ADMIN.pass){
+  if(user.toUpperCase() === ADMIN.user.toUpperCase() && pass === ADMIN.pass){
     currentUser = {...ADMIN};
     sessionStorage.setItem('usc_session', JSON.stringify(currentUser));
     startApp(); return;
@@ -506,7 +506,7 @@ function doLogin(){
 
   // Check leaders
   loadLeaders();
-  const leader = leaders.find(l => l.user === user && l.pass === pass);
+  const leader = leaders.find(l => l.user.toLowerCase() === user.toLowerCase() && l.pass === pass);
   if(leader){
     currentUser = {...leader, role:'leader'};
     sessionStorage.setItem('usc_session', JSON.stringify(currentUser));
