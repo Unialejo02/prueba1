@@ -3,561 +3,243 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>UNISCA · Sistema de Líderes</title>
+<title>UNISCA · Sistema Electoral</title>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root {
-  --navy: #1B3A6B;
-  --navy-dark: #0f2244;
-  --navy-light: #2a5298;
-  --gold: #E8A020;
-  --gold-light: #f5c355;
-  --red: #C0392B;
-  --white: #ffffff;
-  --gray-50: #f8fafc;
-  --gray-100: #f1f5f9;
-  --gray-200: #e2e8f0;
-  --gray-400: #94a3b8;
-  --gray-600: #475569;
-  --gray-800: #1e293b;
-  --success: #10b981;
-  --danger: #ef4444;
-  --font: 'Sora', sans-serif;
-  --mono: 'DM Mono', monospace;
-  --radius: 12px;
-  --shadow: 0 4px 24px rgba(27,58,107,0.10);
-  --shadow-lg: 0 8px 40px rgba(27,58,107,0.18);
+:root{
+  --navy:#1B3A6B;--navy-d:#0f2244;--navy-l:#2a5298;
+  --gold:#E8A020;--gold-l:#f5c355;
+  --green:#10b981;--red:#ef4444;--red-l:#fee2e2;
+  --white:#fff;--gray-50:#f8fafc;--gray-100:#f1f5f9;
+  --gray-200:#e2e8f0;--gray-400:#94a3b8;--gray-600:#475569;--gray-800:#1e293b;
+  --font:'Sora',sans-serif;--mono:'DM Mono',monospace;
+  --r:12px;--shadow:0 4px 24px rgba(27,58,107,.10);--shadow-lg:0 8px 40px rgba(27,58,107,.18);
 }
-
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  font-family: var(--font);
-  background: var(--gray-50);
-  color: var(--gray-800);
-  min-height: 100vh;
-}
-
-/* ── UTILITIES ─────────────────────────────── */
-.hidden { display: none !important; }
-.mono { font-family: var(--mono); }
-
-/* ── TOAST ─────────────────────────────────── */
-#toast {
-  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-  background: var(--gray-800); color: #fff;
-  padding: 12px 24px; border-radius: 99px;
-  font-size: 13px; font-weight: 500;
-  z-index: 9999; opacity: 0;
-  transition: opacity .3s;
-  pointer-events: none;
-  white-space: nowrap;
-}
-#toast.show { opacity: 1; }
-
-/* ── LOGIN ─────────────────────────────────── */
-#loginScreen {
-  min-height: 100vh;
-  background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy) 50%, var(--navy-light) 100%);
-  display: flex; align-items: center; justify-content: center;
-  padding: 24px;
-  position: relative;
-  overflow: hidden;
-}
-
-#loginScreen::before {
-  content: '';
-  position: absolute; inset: 0;
-  background: radial-gradient(circle at 70% 20%, rgba(232,160,32,0.15) 0%, transparent 60%),
-              radial-gradient(circle at 20% 80%, rgba(255,255,255,0.05) 0%, transparent 50%);
-}
-
-.login-card {
-  background: rgba(255,255,255,0.97);
-  border-radius: 24px;
-  padding: 48px 40px;
-  width: 100%; max-width: 400px;
-  box-shadow: var(--shadow-lg);
-  position: relative;
-  z-index: 1;
-}
-
-.login-logo {
-  text-align: center;
-  margin-bottom: 32px;
-}
-
-.login-logo .shield {
-  width: 64px; height: 64px;
-  background: linear-gradient(135deg, var(--navy), var(--navy-light));
-  border-radius: 16px;
-  display: inline-flex; align-items: center; justify-content: center;
-  margin-bottom: 16px;
-  box-shadow: 0 4px 16px rgba(27,58,107,0.3);
-}
-
-.login-logo .shield svg { width: 32px; height: 32px; fill: white; }
-
-.login-logo h1 {
-  font-size: 20px; font-weight: 700;
-  color: var(--navy);
-  line-height: 1.2;
-}
-
-.login-logo p {
-  font-size: 12px; color: var(--gray-400);
-  margin-top: 4px; font-weight: 400;
-}
-
-.login-form label {
-  display: block; font-size: 12px; font-weight: 600;
-  color: var(--gray-600); margin-bottom: 6px;
-  text-transform: uppercase; letter-spacing: 0.5px;
-}
-
-.login-form input {
-  width: 100%; padding: 12px 16px;
-  border: 1.5px solid var(--gray-200);
-  border-radius: var(--radius); font-size: 14px;
-  font-family: var(--font);
-  background: var(--gray-50);
-  color: var(--gray-800);
-  transition: border .2s, box-shadow .2s;
-  text-transform: uppercase;
-  margin-bottom: 16px;
-}
-
-.login-form input:focus {
-  outline: none;
-  border-color: var(--navy);
-  box-shadow: 0 0 0 3px rgba(27,58,107,0.1);
-  background: white;
-}
-
-.btn-primary {
-  width: 100%; padding: 13px;
-  background: linear-gradient(135deg, var(--navy), var(--navy-light));
-  color: white; border: none;
-  border-radius: var(--radius);
-  font-size: 14px; font-weight: 600;
-  font-family: var(--font);
-  cursor: pointer;
-  transition: opacity .2s, transform .1s;
-  margin-top: 4px;
-}
-.btn-primary:hover { opacity: .92; }
-.btn-primary:active { transform: scale(.98); }
-
-.login-note {
-  text-align: center; margin-top: 20px;
-  font-size: 11px; color: var(--gray-400);
-}
-
-/* ── APP SHELL ─────────────────────────────── */
-#app { display: none; min-height: 100vh; flex-direction: column; }
-#app.active { display: flex; }
-
-/* ── TOP BAR ───────────────────────────────── */
-.topbar {
-  background: var(--navy-dark);
-  color: white;
-  padding: 0 20px;
-  height: 58px;
-  display: flex; align-items: center;
-  gap: 12px;
-  position: sticky; top: 0; z-index: 100;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.2);
-}
-
-.topbar-logo {
-  width: 32px; height: 32px;
-  background: var(--gold);
-  border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-.topbar-logo svg { width: 16px; height: 16px; fill: var(--navy-dark); }
-
-.topbar-title { font-size: 14px; font-weight: 600; flex: 1; }
-.topbar-sub { font-size: 11px; color: rgba(255,255,255,0.5); }
-
-.topbar-user {
-  display: flex; align-items: center; gap: 8px;
-  background: rgba(255,255,255,0.1);
-  border-radius: 99px;
-  padding: 6px 14px 6px 8px;
-  cursor: pointer;
-}
-
-.avatar {
-  width: 28px; height: 28px;
-  background: var(--gold);
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 11px; font-weight: 700; color: var(--navy-dark);
-}
-
-.topbar-user span { font-size: 12px; font-weight: 500; }
-
-.btn-logout {
-  background: rgba(255,255,255,0.1);
-  border: none; color: white;
-  padding: 6px 12px; border-radius: 8px;
-  font-size: 12px; cursor: pointer;
-  font-family: var(--font);
-  transition: background .2s;
-}
-.btn-logout:hover { background: rgba(255,255,255,0.2); }
-
-/* ── MAIN CONTENT ──────────────────────────── */
-.main { flex: 1; padding: 24px 20px; max-width: 680px; margin: 0 auto; width: 100%; }
-
-/* ── STATS BAR ─────────────────────────────── */
-.stats {
-  display: grid; grid-template-columns: repeat(3, 1fr);
-  gap: 12px; margin-bottom: 24px;
-}
-
-.stat-card {
-  background: white; border-radius: var(--radius);
-  padding: 16px; text-align: center;
-  box-shadow: var(--shadow);
-  border-top: 3px solid var(--navy);
-}
-
-.stat-card.gold { border-top-color: var(--gold); }
-.stat-card.green { border-top-color: var(--success); }
-
-.stat-num {
-  font-size: 28px; font-weight: 700;
-  color: var(--navy); line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-.stat-card.gold .stat-num { color: var(--gold); }
-.stat-card.green .stat-num { color: var(--success); }
-
-.stat-label { font-size: 11px; color: var(--gray-400); margin-top: 4px; font-weight: 500; }
-
-/* ── SECTION HEADER ────────────────────────── */
-.section-head {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 16px;
-}
-
-.section-head h2 { font-size: 16px; font-weight: 600; color: var(--navy); }
-
-.btn-add {
-  background: var(--gold); color: var(--navy-dark);
-  border: none; border-radius: var(--radius);
-  padding: 9px 18px;
-  font-size: 13px; font-weight: 600;
-  font-family: var(--font);
-  cursor: pointer;
-  display: flex; align-items: center; gap: 6px;
-  transition: background .2s, transform .1s;
-}
-.btn-add:hover { background: var(--gold-light); }
-.btn-add:active { transform: scale(.97); }
-
-/* ── CONTACT CARDS ─────────────────────────── */
-.contacts-list { display: flex; flex-direction: column; gap: 12px; }
-
-.contact-card {
-  background: white;
-  border-radius: var(--radius);
-  padding: 16px;
-  box-shadow: var(--shadow);
-  border-left: 4px solid var(--gray-200);
-  transition: box-shadow .2s, border-color .2s;
-  cursor: pointer;
-}
-
-.contact-card:hover { box-shadow: var(--shadow-lg); border-left-color: var(--navy); }
-.contact-card.voted { border-left-color: var(--success); }
-.contact-card.pending { border-left-color: var(--gold); }
-
-.contact-header { display: flex; align-items: center; gap: 12px; }
-
-.contact-avatar {
-  width: 42px; height: 42px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--navy), var(--navy-light));
-  display: flex; align-items: center; justify-content: center;
-  font-size: 15px; font-weight: 700; color: white;
-  flex-shrink: 0;
-}
-
-.contact-info { flex: 1; min-width: 0; }
-.contact-name { font-size: 14px; font-weight: 600; color: var(--gray-800); }
-.contact-doc { font-size: 11px; color: var(--gray-400); font-family: var(--mono); margin-top: 2px; }
-
-.badge {
-  font-size: 10px; font-weight: 600;
-  padding: 4px 10px; border-radius: 99px;
-  text-transform: uppercase; letter-spacing: 0.5px;
-}
-.badge-voted { background: #d1fae5; color: #065f46; }
-.badge-pending { background: #fef3c7; color: #92400e; }
-.badge-no-cert { background: #fee2e2; color: #991b1b; }
-
-.contact-meta {
-  display: flex; gap: 16px; margin-top: 10px;
-  padding-top: 10px; border-top: 1px solid var(--gray-100);
-}
-
-.meta-item { font-size: 11px; color: var(--gray-400); }
-.meta-item strong { color: var(--gray-600); }
-
-.contact-actions {
-  display: flex; gap: 8px; margin-top: 12px;
-}
-
-.btn-sm {
-  flex: 1; padding: 8px;
-  border-radius: 8px; border: 1.5px solid var(--gray-200);
-  font-size: 12px; font-weight: 500; font-family: var(--font);
-  cursor: pointer; background: white; color: var(--gray-600);
-  transition: all .15s;
-  display: flex; align-items: center; justify-content: center; gap: 4px;
-}
-.btn-sm:hover { border-color: var(--navy); color: var(--navy); }
-.btn-sm.danger:hover { border-color: var(--danger); color: var(--danger); }
-.btn-sm.success { border-color: var(--success); color: var(--success); background: #f0fdf4; }
-
-.files-preview {
-  display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px;
-}
-
-.file-chip {
-  background: var(--gray-100); border-radius: 6px;
-  padding: 4px 10px; font-size: 11px;
-  color: var(--gray-600); font-family: var(--mono);
-  display: flex; align-items: center; gap: 4px;
-  cursor: pointer; transition: background .15s;
-}
-.file-chip:hover { background: var(--gray-200); }
-
-/* ── MODAL ─────────────────────────────────── */
-.modal-overlay {
-  position: fixed; inset: 0;
-  background: rgba(15,34,68,0.6);
-  backdrop-filter: blur(4px);
-  z-index: 500;
-  display: flex; align-items: flex-end; justify-content: center;
-  padding: 0;
-}
-
-@media (min-width: 600px) {
-  .modal-overlay { align-items: center; padding: 24px; }
-}
-
-.modal {
-  background: white;
-  border-radius: 24px 24px 0 0;
-  width: 100%; max-width: 500px;
-  max-height: 90vh;
-  overflow-y: auto;
-  padding: 28px 24px 40px;
-  animation: slideUp .25s ease;
-}
-
-@media (min-width: 600px) {
-  .modal { border-radius: 24px; padding: 32px; }
-}
-
-@keyframes slideUp {
-  from { transform: translateY(40px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-.modal-title {
-  font-size: 18px; font-weight: 700; color: var(--navy);
-  margin-bottom: 20px; display: flex; align-items: center; gap: 10px;
-}
-
-.modal-title .dot {
-  width: 8px; height: 8px; border-radius: 50%;
-  background: var(--gold);
-}
-
-.form-group { margin-bottom: 16px; }
-
-.form-group label {
-  display: block; font-size: 11px; font-weight: 600;
-  color: var(--gray-600); margin-bottom: 6px;
-  text-transform: uppercase; letter-spacing: 0.5px;
-}
-
-.form-group input,
-.form-group select,
-.form-group textarea {
-  width: 100%; padding: 11px 14px;
-  border: 1.5px solid var(--gray-200);
-  border-radius: var(--radius); font-size: 14px;
-  font-family: var(--font); color: var(--gray-800);
-  background: var(--gray-50);
-  transition: border .2s, box-shadow .2s;
-  text-transform: uppercase;
-}
-
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-  outline: none; border-color: var(--navy);
-  box-shadow: 0 0 0 3px rgba(27,58,107,0.1);
-  background: white;
-}
-
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-/* File upload zone */
-.upload-zone {
-  border: 2px dashed var(--gray-200);
-  border-radius: var(--radius);
-  padding: 24px;
-  text-align: center;
-  cursor: pointer;
-  transition: border-color .2s, background .2s;
-  background: var(--gray-50);
-}
-.upload-zone:hover { border-color: var(--navy); background: #f0f4ff; }
-.upload-zone.dragover { border-color: var(--gold); background: #fffbf0; }
-
-.upload-zone input { display: none; }
-.upload-icon { font-size: 28px; margin-bottom: 8px; }
-.upload-zone p { font-size: 13px; color: var(--gray-400); }
-.upload-zone strong { color: var(--navy); }
-
-.uploaded-files { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
-
-.uploaded-file {
-  display: flex; align-items: center; gap: 10px;
-  background: var(--gray-100); border-radius: 8px; padding: 8px 12px;
-}
-
-.uploaded-file .fname { flex: 1; font-size: 12px; font-family: var(--mono); color: var(--gray-600); }
-.uploaded-file .fsize { font-size: 11px; color: var(--gray-400); }
-.uploaded-file .fdelete { background: none; border: none; cursor: pointer; color: var(--danger); font-size: 16px; padding: 0 4px; }
-
-.modal-actions { display: flex; gap: 10px; margin-top: 24px; }
-
-.btn-cancel {
-  flex: 1; padding: 12px;
-  border: 1.5px solid var(--gray-200); background: white;
-  color: var(--gray-600); border-radius: var(--radius);
-  font-size: 14px; font-weight: 600; font-family: var(--font);
-  cursor: pointer; transition: all .15s;
-}
-.btn-cancel:hover { border-color: var(--gray-400); }
-
-.btn-save {
-  flex: 2; padding: 12px;
-  background: linear-gradient(135deg, var(--navy), var(--navy-light));
-  color: white; border: none;
-  border-radius: var(--radius);
-  font-size: 14px; font-weight: 600; font-family: var(--font);
-  cursor: pointer; transition: opacity .2s;
-}
-.btn-save:hover { opacity: .9; }
-.btn-save:disabled { opacity: .5; cursor: not-allowed; }
-
-/* ── EMPTY STATE ───────────────────────────── */
-.empty {
-  text-align: center; padding: 48px 24px;
-  background: white; border-radius: var(--radius);
-  box-shadow: var(--shadow);
-}
-.empty-icon { font-size: 48px; margin-bottom: 16px; }
-.empty h3 { font-size: 16px; font-weight: 600; color: var(--navy); margin-bottom: 8px; }
-.empty p { font-size: 13px; color: var(--gray-400); line-height: 1.6; }
-
-/* ── LOADING ───────────────────────────────── */
-.spinner {
-  display: inline-block;
-  width: 18px; height: 18px;
-  border: 2px solid rgba(255,255,255,0.3);
-  border-top-color: white;
-  border-radius: 50%;
-  animation: spin .6s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.loading-overlay {
-  position: fixed; inset: 0;
-  background: rgba(255,255,255,0.8);
-  backdrop-filter: blur(2px);
-  z-index: 999;
-  display: flex; align-items: center; justify-content: center;
-  flex-direction: column; gap: 12px;
-}
-.loading-overlay p { font-size: 13px; color: var(--gray-600); }
-
-/* ── CONFIG NOTICE ─────────────────────────── */
-.config-notice {
-  background: #fef3c7;
-  border: 1.5px solid var(--gold);
-  border-radius: var(--radius);
-  padding: 16px;
-  margin-bottom: 20px;
-  font-size: 13px;
-  color: #92400e;
-  line-height: 1.6;
-}
-.config-notice strong { display: block; margin-bottom: 4px; font-size: 14px; }
-.config-notice code {
-  background: rgba(0,0,0,0.08);
-  padding: 1px 6px; border-radius: 4px;
-  font-family: var(--mono); font-size: 12px;
-}
-
-/* ── CERT UPLOAD SECTION ───────────────────── */
-.cert-section {
-  margin-top: 16px; padding-top: 16px;
-  border-top: 1.5px dashed var(--gray-200);
-}
-.cert-section h4 { font-size: 12px; font-weight: 600; color: var(--gray-600); margin-bottom: 10px; text-transform: uppercase; letter-spacing: .5px; }
-
-/* ── SEARCH ────────────────────────────────── */
-.search-bar {
-  width: 100%;
-  padding: 11px 16px 11px 40px;
-  border: 1.5px solid var(--gray-200);
-  border-radius: var(--radius);
-  font-size: 14px; font-family: var(--font);
-  background: white;
-  margin-bottom: 16px;
-  position: relative;
-}
-.search-wrap { position: relative; margin-bottom: 16px; }
-.search-wrap svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; fill: none; stroke: var(--gray-400); stroke-width: 2; }
-.search-bar:focus { outline: none; border-color: var(--navy); }
-
-/* ── FILTER TABS ───────────────────────────── */
-.filter-tabs { display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 2px; }
-.filter-tab {
-  padding: 6px 14px; border-radius: 99px;
-  font-size: 12px; font-weight: 600;
-  border: 1.5px solid var(--gray-200);
-  background: white; color: var(--gray-400);
-  cursor: pointer; white-space: nowrap;
-  transition: all .15s;
-}
-.filter-tab.active { background: var(--navy); border-color: var(--navy); color: white; }
-
-@media (max-width: 400px) {
-  .form-row { grid-template-columns: 1fr; }
-  .stats { grid-template-columns: 1fr 1fr 1fr; }
-  .stat-num { font-size: 22px; }
-}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--gray-50);color:var(--gray-800);min-height:100vh}
+.hidden{display:none!important}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  background:var(--gray-800);color:#fff;padding:12px 24px;border-radius:99px;
+  font-size:13px;font-weight:500;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+#toast.show{opacity:1}
+
+/* LOADING */
+#loading{position:fixed;inset:0;background:rgba(255,255,255,.85);backdrop-filter:blur(2px);
+  z-index:999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px}
+#loading p{font-size:13px;color:var(--gray-600)}
+.spinner{display:inline-block;width:32px;height:32px;border:3px solid rgba(27,58,107,.2);
+  border-top-color:var(--navy);border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* LOGIN */
+#loginScreen{min-height:100vh;background:linear-gradient(135deg,var(--navy-d),var(--navy),var(--navy-l));
+  display:flex;align-items:center;justify-content:center;padding:24px;position:relative;overflow:hidden}
+#loginScreen::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at 70% 20%,rgba(232,160,32,.15) 0%,transparent 60%)}
+.login-card{background:rgba(255,255,255,.97);border-radius:24px;padding:48px 40px;
+  width:100%;max-width:400px;box-shadow:var(--shadow-lg);position:relative;z-index:1}
+.login-logo{text-align:center;margin-bottom:32px}
+.login-shield{width:64px;height:64px;background:linear-gradient(135deg,var(--navy),var(--navy-l));
+  border-radius:16px;display:inline-flex;align-items:center;justify-content:center;
+  margin-bottom:16px;box-shadow:0 4px 16px rgba(27,58,107,.3)}
+.login-shield svg{width:32px;height:32px;fill:white}
+.login-logo h1{font-size:22px;font-weight:700;color:var(--navy);line-height:1.2}
+.login-logo p{font-size:12px;color:var(--gray-400);margin-top:4px}
+.lbl{display:block;font-size:11px;font-weight:600;color:var(--gray-600);margin-bottom:6px;
+  text-transform:uppercase;letter-spacing:.5px}
+.login-form .field{margin-bottom:16px}
+.login-form input{width:100%;padding:12px 16px;border:1.5px solid var(--gray-200);
+  border-radius:var(--r);font-size:14px;font-family:var(--font);background:var(--gray-50);
+  color:var(--gray-800);transition:border .2s,box-shadow .2s}
+.login-form input:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(27,58,107,.1);background:white}
+.btn-primary{width:100%;padding:13px;background:linear-gradient(135deg,var(--navy),var(--navy-l));
+  color:white;border:none;border-radius:var(--r);font-size:14px;font-weight:600;
+  font-family:var(--font);cursor:pointer;margin-top:4px;transition:opacity .2s}
+.btn-primary:hover{opacity:.92}
+.login-note{text-align:center;margin-top:16px;font-size:11px;color:var(--gray-400)}
+.login-err{color:var(--red);font-size:12px;text-align:center;margin-top:8px;min-height:16px}
+
+/* APP SHELL */
+#app{display:none;min-height:100vh;flex-direction:column}
+#app.active{display:flex}
+
+/* TOPBAR */
+.topbar{background:var(--navy-d);color:white;padding:0 20px;height:58px;
+  display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;
+  box-shadow:0 2px 12px rgba(0,0,0,.2)}
+.topbar-logo{width:32px;height:32px;background:var(--gold);border-radius:8px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.topbar-logo svg{width:16px;height:16px;fill:var(--navy-d)}
+.topbar-info{flex:1}
+.topbar-title{font-size:14px;font-weight:600}
+.topbar-sub{font-size:10px;color:rgba(255,255,255,.5)}
+.topbar-user{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);
+  border-radius:99px;padding:6px 14px 6px 8px}
+.avatar{width:28px;height:28px;background:var(--gold);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--navy-d)}
+.topbar-user span{font-size:12px;font-weight:500}
+.btn-logout{background:rgba(255,255,255,.1);border:none;color:white;
+  padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:var(--font)}
+.btn-logout:hover{background:rgba(255,255,255,.2)}
+
+/* NAV TABS (admin) */
+.nav-tabs{background:var(--navy);display:flex;padding:0 20px;gap:4px}
+.nav-tab{padding:10px 18px;font-size:13px;font-weight:500;color:rgba(255,255,255,.6);
+  cursor:pointer;border-bottom:2px solid transparent;transition:all .2s}
+.nav-tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+.nav-tab:hover{color:white}
+
+/* MAIN */
+.main{flex:1;padding:24px 20px;max-width:720px;margin:0 auto;width:100%}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+.stat-card{background:white;border-radius:var(--r);padding:16px;text-align:center;
+  box-shadow:var(--shadow);border-top:3px solid var(--navy)}
+.stat-card.gold{border-top-color:var(--gold)}
+.stat-card.green{border-top-color:var(--green)}
+.stat-num{font-size:28px;font-weight:700;color:var(--navy);line-height:1}
+.stat-card.gold .stat-num{color:var(--gold)}
+.stat-card.green .stat-num{color:var(--green)}
+.stat-label{font-size:11px;color:var(--gray-400);margin-top:4px;font-weight:500}
+
+/* SECTION HEADER */
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.section-head h2{font-size:16px;font-weight:600;color:var(--navy)}
+
+/* BUTTONS */
+.btn-add{background:var(--gold);color:var(--navy-d);border:none;border-radius:var(--r);
+  padding:9px 18px;font-size:13px;font-weight:600;font-family:var(--font);cursor:pointer;
+  display:flex;align-items:center;gap:6px;transition:background .2s}
+.btn-add:hover{background:var(--gold-l)}
+
+/* SEARCH */
+.search-wrap{position:relative;margin-bottom:10px}
+.search-wrap svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);
+  width:16px;height:16px;fill:none;stroke:var(--gray-400);stroke-width:2}
+.search-bar{width:100%;padding:11px 16px 11px 40px;border:1.5px solid var(--gray-200);
+  border-radius:var(--r);font-size:14px;font-family:var(--font);background:white;margin-bottom:0}
+.search-bar:focus{outline:none;border-color:var(--navy)}
+
+/* FILTER TABS */
+.filter-tabs{display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding-bottom:2px}
+.filter-tab{padding:6px 14px;border-radius:99px;font-size:12px;font-weight:600;
+  border:1.5px solid var(--gray-200);background:white;color:var(--gray-400);cursor:pointer;white-space:nowrap}
+.filter-tab.active{background:var(--navy);border-color:var(--navy);color:white}
+
+/* CONTACT CARDS */
+.contacts-list{display:flex;flex-direction:column;gap:12px}
+.contact-card{background:white;border-radius:var(--r);padding:16px;box-shadow:var(--shadow);
+  border-left:4px solid var(--gray-200);transition:box-shadow .2s,border-color .2s}
+.contact-card:hover{box-shadow:var(--shadow-lg)}
+.contact-card.voted{border-left-color:var(--green)}
+.contact-card.pending{border-left-color:var(--gold)}
+.contact-header{display:flex;align-items:center;gap:12px}
+.contact-avatar{width:42px;height:42px;border-radius:50%;
+  background:linear-gradient(135deg,var(--navy),var(--navy-l));
+  display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:white;flex-shrink:0}
+.contact-info{flex:1;min-width:0}
+.contact-name{font-size:14px;font-weight:600;color:var(--gray-800)}
+.contact-doc{font-size:11px;color:var(--gray-400);font-family:var(--mono);margin-top:2px}
+.badge{font-size:10px;font-weight:600;padding:4px 10px;border-radius:99px;text-transform:uppercase;letter-spacing:.5px}
+.badge-voted{background:#d1fae5;color:#065f46}
+.badge-pending{background:#fef3c7;color:#92400e}
+.badge-no{background:#fee2e2;color:#991b1b}
+.contact-meta{display:flex;flex-wrap:wrap;gap:16px;margin-top:10px;padding-top:10px;border-top:1px solid var(--gray-100)}
+.meta-item{font-size:11px;color:var(--gray-400)}
+.meta-item strong{color:var(--gray-600)}
+.contact-actions{display:flex;gap:8px;margin-top:12px}
+.btn-sm{flex:1;padding:8px;border-radius:8px;border:1.5px solid var(--gray-200);
+  font-size:12px;font-weight:500;font-family:var(--font);cursor:pointer;
+  background:white;color:var(--gray-600);transition:all .15s;
+  display:flex;align-items:center;justify-content:center;gap:4px}
+.btn-sm:hover{border-color:var(--navy);color:var(--navy)}
+.btn-sm.danger:hover{border-color:var(--red);color:var(--red)}
+.btn-sm.success{border-color:var(--green);color:var(--green);background:#f0fdf4}
+.cert-chip{background:var(--gray-100);border-radius:6px;padding:5px 10px;font-size:11px;
+  color:var(--gray-600);font-family:var(--mono);display:inline-flex;align-items:center;gap:4px;
+  margin-top:8px;cursor:pointer;transition:background .15s}
+.cert-chip:hover{background:var(--gray-200)}
+.cert-chip.has-file{background:#d1fae5;color:#065f46}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(15,34,68,.6);backdrop-filter:blur(4px);
+  z-index:500;display:flex;align-items:flex-end;justify-content:center;padding:0}
+@media(min-width:600px){.modal-overlay{align-items:center;padding:24px}}
+.modal{background:white;border-radius:24px 24px 0 0;width:100%;max-width:520px;
+  max-height:92vh;overflow-y:auto;padding:28px 24px 40px;animation:slideUp .25s ease}
+@media(min-width:600px){.modal{border-radius:24px;padding:32px}}
+@keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-title{font-size:18px;font-weight:700;color:var(--navy);margin-bottom:20px;
+  display:flex;align-items:center;gap:10px}
+.modal-title .dot{width:8px;height:8px;border-radius:50%;background:var(--gold)}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:11px;font-weight:600;color:var(--gray-600);
+  margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.form-group input,.form-group select,.form-group textarea{
+  width:100%;padding:11px 14px;border:1.5px solid var(--gray-200);border-radius:var(--r);
+  font-size:14px;font-family:var(--font);color:var(--gray-800);background:var(--gray-50);
+  transition:border .2s,box-shadow .2s;text-transform:uppercase}
+.form-group select{text-transform:none}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{
+  outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(27,58,107,.1);background:white}
+.form-group input.error{border-color:var(--red)}
+.field-hint{font-size:11px;color:var(--gray-400);margin-top:4px}
+.field-err{font-size:11px;color:var(--red);margin-top:4px;display:none}
+.field-err.show{display:block}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal-actions{display:flex;gap:10px;margin-top:24px}
+.btn-cancel{flex:1;padding:12px;border:1.5px solid var(--gray-200);background:white;
+  color:var(--gray-600);border-radius:var(--r);font-size:14px;font-weight:600;font-family:var(--font);cursor:pointer}
+.btn-save{flex:2;padding:12px;background:linear-gradient(135deg,var(--navy),var(--navy-l));
+  color:white;border:none;border-radius:var(--r);font-size:14px;font-weight:600;font-family:var(--font);cursor:pointer}
+.btn-save:hover{opacity:.9}
+
+/* UPLOAD */
+.upload-zone{border:2px dashed var(--gray-200);border-radius:var(--r);padding:20px;
+  text-align:center;cursor:pointer;transition:border-color .2s,background .2s;background:var(--gray-50)}
+.upload-zone:hover{border-color:var(--navy);background:#f0f4ff}
+.upload-zone input{display:none}
+.upload-zone p{font-size:13px;color:var(--gray-400)}
+.upload-zone strong{color:var(--navy)}
+.uploaded-file{display:flex;align-items:center;gap:10px;background:var(--gray-100);
+  border-radius:8px;padding:8px 12px;margin-top:8px}
+.uploaded-file .fname{flex:1;font-size:12px;font-family:var(--mono);color:var(--gray-600)}
+.uploaded-file .fsize{font-size:11px;color:var(--gray-400)}
+.uploaded-file .fdelete{background:none;border:none;cursor:pointer;color:var(--red);font-size:18px;padding:0 4px;line-height:1}
+
+/* LEADER CARDS (admin) */
+.leader-cards{display:flex;flex-direction:column;gap:10px}
+.leader-card{background:white;border-radius:var(--r);padding:16px;box-shadow:var(--shadow);
+  display:flex;align-items:center;gap:14px}
+.leader-av{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--navy),var(--navy-l));
+  display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:white;flex-shrink:0}
+.leader-info{flex:1}
+.leader-name{font-size:14px;font-weight:600;color:var(--gray-800)}
+.leader-user{font-size:11px;color:var(--gray-400);font-family:var(--mono);margin-top:2px}
+.leader-stats{font-size:11px;color:var(--gray-600);margin-top:4px}
+.leader-actions{display:flex;gap:6px}
+
+/* EMPTY */
+.empty{text-align:center;padding:48px 24px;background:white;border-radius:var(--r);box-shadow:var(--shadow)}
+.empty-icon{font-size:48px;margin-bottom:16px}
+.empty h3{font-size:16px;font-weight:600;color:var(--navy);margin-bottom:8px}
+.empty p{font-size:13px;color:var(--gray-400);line-height:1.6}
+
+/* ADMIN BADGE */
+.admin-badge{background:var(--gold);color:var(--navy-d);font-size:10px;font-weight:700;
+  padding:2px 8px;border-radius:99px;text-transform:uppercase;letter-spacing:.5px}
+
+@media(max-width:400px){.form-row{grid-template-columns:1fr}.stats{gap:8px}.stat-num{font-size:22px}}
 </style>
 </head>
 <body>
 
-<!-- TOAST -->
 <div id="toast"></div>
-
-<!-- LOADING -->
-<div id="loading" class="loading-overlay hidden">
-  <div class="spinner" style="border-color:rgba(27,58,107,.2);border-top-color:var(--navy);width:32px;height:32px;border-width:3px"></div>
+<div id="loading" class="hidden">
+  <div class="spinner"></div>
   <p id="loadingMsg">Guardando...</p>
 </div>
 
@@ -565,583 +247,757 @@ body {
 <div id="loginScreen">
   <div class="login-card">
     <div class="login-logo">
-      <div class="shield">
+      <div class="login-shield">
         <svg viewBox="0 0 24 24"><path d="M12 2L4 6v6c0 5.25 3.5 10.15 8 11.35C16.5 22.15 20 17.25 20 12V6L12 2z"/></svg>
       </div>
-      <h1>UNISCA · Líderes</h1>
-      <p>Sistema de gestión electoral</p>
+      <h1>UNISCA</h1>
+      <p>Sistema de Gestión Electoral · 2026</p>
     </div>
     <div class="login-form">
-      <div class="form-group">
-        <label>Usuario</label>
-        <input id="loginUser" type="text" placeholder="Tu nombre de usuario" autocomplete="username">
+      <div class="field">
+        <label class="lbl">Usuario</label>
+        <input id="loginUser" type="text" placeholder="Tu usuario" autocomplete="username">
       </div>
-      <div class="form-group">
-        <label>Contraseña</label>
+      <div class="field">
+        <label class="lbl">Contraseña</label>
         <input id="loginPass" type="password" placeholder="••••••••" autocomplete="current-password">
       </div>
+      <div class="login-err" id="loginErr"></div>
       <button class="btn-primary" onclick="doLogin()">Ingresar al sistema</button>
     </div>
-    <p class="login-note">Acceso exclusivo para líderes registrados · UNISCA 2025</p>
+    <p class="login-note">Acceso exclusivo · UNISCA 2026</p>
   </div>
 </div>
 
 <!-- ══ APP ════════════════════════════════════════════════════════ -->
 <div id="app">
-  <!-- Top Bar -->
   <div class="topbar">
     <div class="topbar-logo">
       <svg viewBox="0 0 24 24"><path d="M12 2L4 6v6c0 5.25 3.5 10.15 8 11.35C16.5 22.15 20 17.25 20 12V6L12 2z"/></svg>
     </div>
-    <div style="flex:1">
-      <div class="topbar-title">UNISCA · Líderes</div>
+    <div class="topbar-info">
+      <div class="topbar-title">UNISCA · Electoral</div>
+      <div class="topbar-sub" id="topSub">Sistema de gestión</div>
     </div>
     <div class="topbar-user">
       <div class="avatar" id="userAvatar">?</div>
-      <span id="userName">Líder</span>
+      <span id="userName">Usuario</span>
     </div>
     <button class="btn-logout" onclick="doLogout()">Salir</button>
   </div>
 
-  <!-- Main -->
+  <!-- Admin nav tabs -->
+  <div class="nav-tabs hidden" id="adminTabs">
+    <div class="nav-tab active" onclick="showAdminTab('contacts',this)">📋 Todos los registros</div>
+    <div class="nav-tab" onclick="showAdminTab('leaders',this)">👥 Líderes</div>
+  </div>
+
   <div class="main">
 
-    <!-- Config notice (shown if GAS URL not configured) -->
-    <div class="config-notice" id="configNotice">
-      <strong>⚠️ Configuración pendiente</strong>
-      Aún no has conectado Google Sheets. Edita este archivo HTML y reemplaza <code>TU_URL_AQUI</code> con la URL de tu Google Apps Script. Los datos se guardan localmente por ahora.
-    </div>
-
-    <!-- Stats -->
-    <div class="stats">
-      <div class="stat-card">
-        <div class="stat-num" id="statTotal">0</div>
-        <div class="stat-label">Contactos</div>
+    <!-- ── PANEL CONTACTOS ──────────────────────────────── -->
+    <div id="panelContacts">
+      <div class="stats">
+        <div class="stat-card"><div class="stat-num" id="statTotal">0</div><div class="stat-label">Registros</div></div>
+        <div class="stat-card gold"><div class="stat-num" id="statCert">0</div><div class="stat-label">Con certificado</div></div>
+        <div class="stat-card green"><div class="stat-num" id="statVoted">0</div><div class="stat-label">Confirmados</div></div>
       </div>
-      <div class="stat-card gold">
-        <div class="stat-num" id="statCert">0</div>
-        <div class="stat-label">Con certificado</div>
+
+      <div class="section-head">
+        <h2 id="contactsTitle">Mis contactos</h2>
+        <button class="btn-add" onclick="openContactModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14M5 12h14"/></svg>
+          Agregar
+        </button>
       </div>
-      <div class="stat-card green">
-        <div class="stat-num" id="statVoted">0</div>
-        <div class="stat-label">Confirmados</div>
+
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input class="search-bar" id="searchInput" placeholder="Buscar por nombre o cédula..." oninput="renderContacts()">
       </div>
+
+      <div class="filter-tabs">
+        <div class="filter-tab active" onclick="setFilter('all',this)">Todos</div>
+        <div class="filter-tab" onclick="setFilter('voted',this)">Confirmados ✓</div>
+        <div class="filter-tab" onclick="setFilter('pending',this)">Pendientes</div>
+        <div class="filter-tab" onclick="setFilter('cert',this)">Con certificado</div>
+      </div>
+
+      <div class="contacts-list" id="contactsList"></div>
     </div>
 
-    <!-- Contacts header -->
-    <div class="section-head">
-      <h2>Mis contactos</h2>
-      <button class="btn-add" onclick="openModal()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14M5 12h14"/></svg>
-        Agregar
-      </button>
+    <!-- ── PANEL LÍDERES (solo admin) ──────────────────── -->
+    <div id="panelLeaders" class="hidden">
+      <div class="section-head">
+        <h2>Gestión de líderes</h2>
+        <button class="btn-add" onclick="openLeaderModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14M5 12h14"/></svg>
+          Nuevo líder
+        </button>
+      </div>
+      <div class="leader-cards" id="leaderList"></div>
     </div>
 
-    <!-- Search -->
-    <div class="search-wrap">
-      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      <input class="search-bar" id="searchInput" placeholder="Buscar por nombre o cédula..." oninput="renderContacts()">
-    </div>
-
-    <!-- Filter tabs -->
-    <div class="filter-tabs">
-      <div class="filter-tab active" data-filter="all" onclick="setFilter('all',this)">Todos</div>
-      <div class="filter-tab" data-filter="voted" onclick="setFilter('voted',this)">Confirmados ✓</div>
-      <div class="filter-tab" data-filter="pending" onclick="setFilter('pending',this)">Pendientes</div>
-      <div class="filter-tab" data-filter="cert" onclick="setFilter('cert',this)">Con certificado</div>
-    </div>
-
-    <!-- Contacts list -->
-    <div class="contacts-list" id="contactsList"></div>
   </div>
 </div>
 
-<!-- ══ MODAL AGREGAR/EDITAR ═══════════════════════════════════════ -->
-<div class="modal-overlay hidden" id="modalOverlay" onclick="closeModalOutside(event)">
+<!-- ══ MODAL CONTACTO ═════════════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="contactModal" onclick="closeIfOutside(event,'contactModal')">
   <div class="modal">
-    <div class="modal-title">
-      <div class="dot"></div>
-      <span id="modalTitleText">Nuevo contacto</span>
-    </div>
+    <div class="modal-title"><div class="dot"></div><span id="contactModalTitle">Nuevo registro</span></div>
 
     <div class="form-row">
       <div class="form-group">
-        <label>Nombres *</label>
-        <input id="fNombres" placeholder="Nombres">
+        <label>Nombres <span style="color:var(--red)">*</span></label>
+        <input id="fNombres" placeholder="Nombres" oninput="toUpper(this)">
       </div>
       <div class="form-group">
-        <label>Apellidos *</label>
-        <input id="fApellidos" placeholder="Apellidos">
-      </div>
-    </div>
-
-    <div class="form-row">
-      <div class="form-group">
-        <label>Tipo Doc.</label>
-        <select id="fTipoDoc">
-          <option value="CC">CC</option>
-          <option value="TI">TI</option>
-          <option value="CE">CE</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>N.° Documento *</label>
-        <input id="fDoc" placeholder="Número" type="number">
+        <label>Apellidos <span style="color:var(--red)">*</span></label>
+        <input id="fApellidos" placeholder="Apellidos" oninput="toUpper(this)">
       </div>
     </div>
 
     <div class="form-row">
       <div class="form-group">
-        <label>Celular</label>
-        <input id="fCel" placeholder="310..." type="tel">
+        <label>Tipo documento</label>
+        <select id="fTipoDoc"><option value="CC">CC</option><option value="TI">TI</option><option value="CE">CE</option><option value="PA">PA</option></select>
+      </div>
+      <div class="form-group">
+        <label>N.° documento <span style="color:var(--red)">*</span></label>
+        <input id="fDoc" placeholder="Mínimo 10 dígitos" type="tel" maxlength="12" oninput="onlyNumbers(this)">
+        <div class="field-err" id="errDoc">Mínimo 10 dígitos</div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Celular <span style="color:var(--red)">*</span></label>
+        <input id="fCel" placeholder="10 dígitos" type="tel" maxlength="10" oninput="onlyNumbers(this)">
+        <div class="field-err" id="errCel">Debe tener exactamente 10 dígitos</div>
       </div>
       <div class="form-group">
         <label>Municipio</label>
-        <input id="fMunicipio" placeholder="Cali">
+        <input id="fMunicipio" placeholder="Ciudad" oninput="toUpper(this)">
       </div>
     </div>
 
     <div class="form-row">
       <div class="form-group">
         <label>Barrio / Vereda</label>
-        <input id="fBarrio" placeholder="Barrio">
+        <input id="fBarrio" placeholder="Barrio" oninput="toUpper(this)">
       </div>
       <div class="form-group">
         <label>Puesto de votación</label>
-        <input id="fPuesto" placeholder="Nombre del puesto">
+        <input id="fPuesto" placeholder="Nombre del puesto" oninput="toUpper(this)">
       </div>
     </div>
 
     <div class="form-group">
       <label>Estado</label>
-      <select id="fEstado">
+      <select id="fEstado" style="text-transform:none">
         <option value="pending">Pendiente de confirmar</option>
         <option value="voted">Confirmado que vota ✓</option>
       </select>
     </div>
 
-    <!-- Archivos -->
-    <div class="cert-section">
-      <h4>📎 Documentos y certificados electorales</h4>
-      <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropFiles(event)">
-        <input type="file" id="fileInput" multiple accept=".pdf,.jpg,.jpeg,.png,.webp" onchange="handleFiles(this.files)">
-        <div class="upload-icon">📄</div>
-        <p><strong>Toca para subir archivos</strong><br>PDF, JPG, PNG · Máx. 5MB por archivo</p>
+    <!-- Certificado electoral — solo 1 archivo -->
+    <div class="form-group">
+      <label>Certificado electoral</label>
+      <div id="certUploadZone" class="upload-zone" onclick="document.getElementById('certInput').click()">
+        <input type="file" id="certInput" accept=".pdf,.jpg,.jpeg,.png,.webp" onchange="handleCert(this.files[0])">
+        <p>📄 <strong>Toca para subir</strong> · PDF, JPG, PNG · Máx. 5MB<br><small style="color:var(--gray-400)">Solo se permite 1 certificado por persona</small></p>
       </div>
-      <div class="uploaded-files" id="uploadedFiles"></div>
+      <div id="certPreview" class="hidden"></div>
     </div>
 
     <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
-      <button class="btn-save" id="btnSave" onclick="saveContact()">Guardar contacto</button>
+      <button class="btn-cancel" onclick="closeModal('contactModal')">Cancelar</button>
+      <button class="btn-save" onclick="saveContact()">Guardar registro</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL LÍDER ════════════════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="leaderModal" onclick="closeIfOutside(event,'leaderModal')">
+  <div class="modal">
+    <div class="modal-title"><div class="dot"></div><span id="leaderModalTitle">Nuevo líder</span></div>
+
+    <div class="form-group">
+      <label>Nombre completo <span style="color:var(--red)">*</span></label>
+      <input id="lNombre" placeholder="Nombre completo" oninput="toUpper(this)">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Usuario <span style="color:var(--red)">*</span></label>
+        <input id="lUser" placeholder="usuario123" style="text-transform:lowercase" oninput="this.value=this.value.toLowerCase()">
+        <div class="field-hint">Solo letras y números, sin espacios</div>
+        <div class="field-err" id="errLUser">Usuario ya existe</div>
+      </div>
+      <div class="form-group">
+        <label>Contraseña <span style="color:var(--red)">*</span></label>
+        <input id="lPass" placeholder="Contraseña" type="text" style="text-transform:none">
+        <div class="field-hint">Mínimo 6 caracteres</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Zona / Sector asignado</label>
+      <input id="lZona" placeholder="Ej. Comuna 5 - Norte" oninput="toUpper(this)">
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('leaderModal')">Cancelar</button>
+      <button class="btn-save" onclick="saveLeader()">Guardar líder</button>
     </div>
   </div>
 </div>
 
 <script>
 // ══════════════════════════════════════════════════════════════════
-//  CONFIGURACIÓN — Reemplaza con tu URL de Google Apps Script
+//  CONFIG
 // ══════════════════════════════════════════════════════════════════
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxT9BFhKPmTJfRxuaXyhKawne34etk2xOsdBXPFmGzp6-H4PBM785xIQ8RmfKgKoKdI/exec';
+const gasReady = GAS_URL !== 'TU_URL_AQUI';
 
-// ══════════════════════════════════════════════════════════════════
-//  LÍDERES — Agrega aquí los líderes y sus contraseñas
-// ══════════════════════════════════════════════════════════════════
-const LIDERES = {
-  'lider1': { pass: 'clave123', nombre: 'Carlos Martínez', id: 'L001' },
-  'lider2': { pass: 'clave456', nombre: 'Ana Gómez',       id: 'L002' },
-  'lider3': { pass: 'clave789', nombre: 'Pedro López',     id: 'L003' },
-  // Agrega más líderes aquí...
-};
+// Admin credentials
+const ADMIN = { user: 'UNISCA2026', pass: 'Colombia20206@', nombre: 'UNISCA Admin', id: 'ADMIN', role: 'admin' };
 
 // ══════════════════════════════════════════════════════════════════
 //  ESTADO GLOBAL
 // ══════════════════════════════════════════════════════════════════
-let currentLeader = null;
-let contacts = [];
-let editingId = null;
-let pendingFiles = []; // { name, size, base64 }
+let currentUser  = null;
+let contacts     = [];
+let leaders      = [];
+let editContactId = null;
+let editLeaderId  = null;
+let pendingCert  = null; // { name, size, base64 }
 let activeFilter = 'all';
+let adminTab     = 'contacts';
 
-const gasReady = GAS_URL !== 'TU_URL_AQUI';
+// ══════════════════════════════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════════════════════════════
+function toUpper(el){ const p=el.selectionStart; el.value=el.value.toUpperCase(); el.setSelectionRange(p,p); }
+function onlyNumbers(el){ el.value=el.value.replace(/\D/g,''); }
+function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmt(b){ if(b<1024)return b+'B'; if(b<1048576)return Math.round(b/1024)+'KB'; return(b/1048576).toFixed(1)+'MB'; }
+function showLoading(m='Guardando...'){ document.getElementById('loadingMsg').textContent=m; document.getElementById('loading').classList.remove('hidden'); }
+function hideLoading(){ document.getElementById('loading').classList.add('hidden'); }
+function toast(msg,dur=2800){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),dur); }
+
+function lKey(id){ return 'usc_'+id; }
+function leadersKey(){ return 'usc_leaders'; }
 
 // ══════════════════════════════════════════════════════════════════
 //  AUTH
 // ══════════════════════════════════════════════════════════════════
-function doLogin() {
-  const user = document.getElementById('loginUser').value.trim().toLowerCase();
+function doLogin(){
+  const user = document.getElementById('loginUser').value.trim();
   const pass = document.getElementById('loginPass').value;
-  if (!user || !pass) return toast('Ingresa usuario y contraseña');
+  const err  = document.getElementById('loginErr');
+  err.textContent = '';
 
-  const leader = LIDERES[user];
-  if (!leader || leader.pass !== pass) return toast('Usuario o contraseña incorrectos');
+  if(!user||!pass){ err.textContent='Ingresa usuario y contraseña'; return; }
 
-  currentLeader = { ...leader, user };
-  sessionStorage.setItem('lider', JSON.stringify(currentLeader));
-  startApp();
+  // Check admin
+  if(user === ADMIN.user && pass === ADMIN.pass){
+    currentUser = {...ADMIN};
+    sessionStorage.setItem('usc_session', JSON.stringify(currentUser));
+    startApp(); return;
+  }
+
+  // Check leaders
+  loadLeaders();
+  const leader = leaders.find(l => l.user === user && l.pass === pass);
+  if(leader){
+    currentUser = {...leader, role:'leader'};
+    sessionStorage.setItem('usc_session', JSON.stringify(currentUser));
+    startApp(); return;
+  }
+
+  err.textContent = 'Usuario o contraseña incorrectos';
 }
 
-function doLogout() {
-  sessionStorage.removeItem('lider');
-  currentLeader = null; contacts = [];
-  document.getElementById('loginScreen').style.display = '';
+function doLogout(){
+  sessionStorage.removeItem('usc_session');
+  currentUser=null; contacts=[];
+  document.getElementById('loginScreen').style.display='';
   document.getElementById('app').classList.remove('active');
 }
 
-function startApp() {
-  document.getElementById('loginScreen').style.display = 'none';
+function startApp(){
+  document.getElementById('loginScreen').style.display='none';
   document.getElementById('app').classList.add('active');
-  document.getElementById('userName').textContent = currentLeader.nombre.split(' ')[0];
-  document.getElementById('userAvatar').textContent = currentLeader.nombre.charAt(0).toUpperCase();
-  if (gasReady) document.getElementById('configNotice').classList.add('hidden');
+  document.getElementById('userName').textContent = currentUser.nombre.split(' ')[0];
+  document.getElementById('userAvatar').textContent = currentUser.nombre.charAt(0).toUpperCase();
+
+  if(currentUser.role === 'admin'){
+    document.getElementById('adminTabs').classList.remove('hidden');
+    document.getElementById('topSub').textContent = 'Administrador · UNISCA';
+    document.getElementById('contactsTitle').textContent = 'Todos los registros';
+    loadLeaders();
+  } else {
+    document.getElementById('adminTabs').classList.add('hidden');
+    document.getElementById('topSub').textContent = currentUser.zona ? 'Zona: '+currentUser.zona : 'Líder';
+    document.getElementById('contactsTitle').textContent = 'Mis contactos';
+  }
+
   loadContacts();
 }
 
-// Check session on load
 window.onload = () => {
-  const saved = sessionStorage.getItem('lider');
-  if (saved) { currentLeader = JSON.parse(saved); startApp(); }
-  document.getElementById('loginUser').addEventListener('keydown', e => e.key === 'Enter' && document.getElementById('loginPass').focus());
-  document.getElementById('loginPass').addEventListener('keydown', e => e.key === 'Enter' && doLogin());
+  const s = sessionStorage.getItem('usc_session');
+  if(s){ currentUser=JSON.parse(s); startApp(); }
+  document.getElementById('loginUser').addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('loginPass').focus(); });
+  document.getElementById('loginPass').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
 };
 
 // ══════════════════════════════════════════════════════════════════
-//  DATA — LOCAL STORAGE + GOOGLE SHEETS
+//  LEADERS CRUD
 // ══════════════════════════════════════════════════════════════════
-function storageKey() { return `unisca_${currentLeader.id}`; }
+function loadLeaders(){
+  const raw = localStorage.getItem(leadersKey());
+  leaders = raw ? JSON.parse(raw) : [];
+}
 
-function loadContacts() {
-  // Load from localStorage first
-  const local = localStorage.getItem(storageKey());
-  contacts = local ? JSON.parse(local) : [];
+function saveLeaders(){
+  localStorage.setItem(leadersKey(), JSON.stringify(leaders));
+}
 
-  if (gasReady) {
-    // Sync from Google Sheets
-    showLoading('Sincronizando...');
-    fetch(`${GAS_URL}?action=get&lider=${currentLeader.id}`)
-      .then(r => r.json())
-      .then(data => {
-        if (data.contacts) {
-          contacts = data.contacts;
-          localStorage.setItem(storageKey(), JSON.stringify(contacts));
-        }
-        hideLoading();
-        renderContacts();
-        updateStats();
-      })
-      .catch(() => { hideLoading(); renderContacts(); updateStats(); });
+function openLeaderModal(id=null){
+  editLeaderId = id;
+  document.getElementById('errLUser').classList.remove('show');
+  if(id){
+    const l = leaders.find(x=>x.id===id);
+    if(!l) return;
+    document.getElementById('leaderModalTitle').textContent = 'Editar líder';
+    document.getElementById('lNombre').value = l.nombre;
+    document.getElementById('lUser').value   = l.user;
+    document.getElementById('lPass').value   = l.pass;
+    document.getElementById('lZona').value   = l.zona||'';
   } else {
-    renderContacts();
-    updateStats();
+    document.getElementById('leaderModalTitle').textContent = 'Nuevo líder';
+    ['lNombre','lUser','lPass','lZona'].forEach(i=>document.getElementById(i).value='');
   }
+  document.getElementById('leaderModal').classList.remove('hidden');
 }
 
-async function gasRequest(payload) {
-  if (!gasReady) return true;
-  try {
-    const encoded = encodeURIComponent(JSON.stringify(payload));
-    const resp = await fetch(`${GAS_URL}?data=${encoded}`);
-    const data = await resp.json();
-    return data.ok;
-  } catch { return false; }
-}
+function saveLeader(){
+  const nombre = document.getElementById('lNombre').value.trim();
+  const user   = document.getElementById('lUser').value.trim().toLowerCase();
+  const pass   = document.getElementById('lPass').value.trim();
+  const zona   = document.getElementById('lZona').value.trim();
 
-async function saveToSheet(contact) {
-  return gasRequest({ action: "save", lider: currentLeader.id, liderNombre: currentLeader.nombre, contact });
-}
+  if(!nombre||!user||!pass){ toast('Todos los campos marcados son obligatorios'); return; }
+  if(pass.length<6){ toast('La contraseña debe tener mínimo 6 caracteres'); return; }
 
-async function deleteFromSheet(id) {
-  return gasRequest({ action: "delete", lider: currentLeader.id, id });
-}
+  // Check duplicate user
+  const dup = leaders.find(l=>l.user===user && l.id!==editLeaderId);
+  if(dup||user===ADMIN.user.toLowerCase()){
+    document.getElementById('errLUser').classList.add('show'); return;
+  }
+  document.getElementById('errLUser').classList.remove('show');
 
-// ══════════════════════════════════════════════════════════════════
-//  CONTACTS — CRUD
-// ══════════════════════════════════════════════════════════════════
-async function saveContact() {
-  const nombres = document.getElementById('fNombres').value.trim().toUpperCase();
-  const apellidos = document.getElementById('fApellidos').value.trim().toUpperCase();
-  const doc = document.getElementById('fDoc').value.trim();
-
-  if (!nombres || !apellidos || !doc) return toast('Nombre y documento son obligatorios');
-
-  const contact = {
-    id: editingId || `C${Date.now()}`,
-    nombres, apellidos,
-    tipoDoc: document.getElementById('fTipoDoc').value,
-    doc,
-    celular: document.getElementById('fCel').value.trim(),
-    municipio: document.getElementById('fMunicipio').value.trim().toUpperCase(),
-    barrio: document.getElementById('fBarrio').value.trim().toUpperCase(),
-    puesto: document.getElementById('fPuesto').value.trim().toUpperCase(),
-    estado: document.getElementById('fEstado').value,
-    files: pendingFiles.map(f => ({ name: f.name, size: f.size, data: f.base64 })),
-    fecha: new Date().toLocaleDateString('es-CO'),
-    lider: currentLeader.id,
+  const leader = {
+    id:     editLeaderId || 'L'+Date.now(),
+    nombre, user, pass, zona,
+    role:   'leader',
+    fecha:  new Date().toLocaleDateString('es-CO')
   };
 
-  // Merge files if editing
-  if (editingId) {
-    const prev = contacts.find(c => c.id === editingId);
-    if (prev && prev.files) {
-      const existingNames = pendingFiles.map(f => f.name);
-      const kept = prev.files.filter(f => !existingNames.includes(f.name));
-      contact.files = [...kept, ...contact.files];
-    }
+  if(editLeaderId){
+    const idx = leaders.findIndex(l=>l.id===editLeaderId);
+    if(idx>=0) leaders[idx]=leader; else leaders.push(leader);
+  } else {
+    leaders.push(leader);
   }
 
-  document.getElementById('btnSave').disabled = true;
-  document.getElementById('btnSave').innerHTML = '<div class="spinner"></div>';
+  saveLeaders();
+  closeModal('leaderModal');
+  renderLeaders();
+  toast(editLeaderId ? 'Líder actualizado ✓' : 'Líder creado ✓');
+}
 
-  if (gasReady) showLoading('Guardando en Google Sheets...');
+function deleteLeader(id){
+  if(!confirm('¿Eliminar este líder? Se eliminarán también sus contactos.')) return;
+  leaders = leaders.filter(l=>l.id!==id);
+  saveLeaders();
+  // Remove contacts
+  localStorage.removeItem(lKey(id));
+  renderLeaders();
+  loadContacts();
+  toast('Líder eliminado');
+}
 
-  const ok = await saveToSheet(contact);
+function renderLeaders(){
+  loadLeaders();
+  const el = document.getElementById('leaderList');
+  if(!leaders.length){
+    el.innerHTML=`<div class="empty"><div class="empty-icon">👥</div><h3>Sin líderes</h3><p>Agrega tu primer líder tocando <strong>Nuevo líder</strong>.</p></div>`;
+    return;
+  }
+  el.innerHTML = leaders.map(l=>{
+    const lContacts = JSON.parse(localStorage.getItem(lKey(l.id))||'[]');
+    const voted     = lContacts.filter(c=>c.estado==='voted').length;
+    const ini       = l.nombre.charAt(0).toUpperCase();
+    return `<div class="leader-card">
+      <div class="leader-av">${ini}</div>
+      <div class="leader-info">
+        <div class="leader-name">${escHtml(l.nombre)}</div>
+        <div class="leader-user">@${escHtml(l.user)} ${l.zona?'· '+escHtml(l.zona):''}</div>
+        <div class="leader-stats">📋 ${lContacts.length} contactos · ✓ ${voted} confirmados</div>
+      </div>
+      <div class="leader-actions">
+        <button class="btn-sm" onclick="openLeaderModal('${l.id}')">✏️</button>
+        <button class="btn-sm danger" onclick="deleteLeader('${l.id}')">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
 
-  if (editingId) {
-    const idx = contacts.findIndex(c => c.id === editingId);
-    if (idx >= 0) contacts[idx] = contact; else contacts.push(contact);
+// ══════════════════════════════════════════════════════════════════
+//  ADMIN TABS
+// ══════════════════════════════════════════════════════════════════
+function showAdminTab(tab, el){
+  adminTab = tab;
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  if(tab==='contacts'){
+    document.getElementById('panelContacts').classList.remove('hidden');
+    document.getElementById('panelLeaders').classList.add('hidden');
+    renderContacts(); updateStats();
   } else {
+    document.getElementById('panelContacts').classList.add('hidden');
+    document.getElementById('panelLeaders').classList.remove('hidden');
+    renderLeaders();
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  CONTACTS DATA
+// ══════════════════════════════════════════════════════════════════
+function loadContacts(){
+  if(currentUser.role==='admin'){
+    // Load all contacts from all leaders
+    loadLeaders();
+    contacts = [];
+    leaders.forEach(l=>{
+      const raw = localStorage.getItem(lKey(l.id));
+      if(raw) contacts = contacts.concat(JSON.parse(raw));
+    });
+    // Also load admin's own if any
+    const adminRaw = localStorage.getItem(lKey('ADMIN'));
+    if(adminRaw) contacts = contacts.concat(JSON.parse(adminRaw));
+  } else {
+    const raw = localStorage.getItem(lKey(currentUser.id));
+    contacts = raw ? JSON.parse(raw) : [];
+  }
+
+  if(gasReady) syncFromSheet();
+  else { renderContacts(); updateStats(); }
+}
+
+function syncFromSheet(){
+  const lid = currentUser.role==='admin' ? 'ALL' : currentUser.id;
+  fetch(`${GAS_URL}?action=get&lider=${lid}`)
+    .then(r=>r.json())
+    .then(data=>{
+      if(data.contacts && data.contacts.length){
+        if(currentUser.role==='admin'){
+          contacts = data.contacts;
+        } else {
+          contacts = data.contacts;
+          localStorage.setItem(lKey(currentUser.id), JSON.stringify(contacts));
+        }
+      }
+      renderContacts(); updateStats();
+    })
+    .catch(()=>{ renderContacts(); updateStats(); });
+}
+
+function currentContacts(){
+  if(currentUser.role==='admin') return contacts;
+  return contacts.filter(c=>c.lider===currentUser.id);
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  CONTACTS CRUD
+// ══════════════════════════════════════════════════════════════════
+function openContactModal(id=null){
+  editContactId = id;
+  pendingCert   = null;
+  document.getElementById('certPreview').classList.add('hidden');
+  document.getElementById('certPreview').innerHTML='';
+  document.getElementById('certUploadZone').classList.remove('hidden');
+  document.getElementById('errDoc').classList.remove('show');
+  document.getElementById('errCel').classList.remove('show');
+
+  if(id){
+    const c = contacts.find(x=>x.id===id);
+    if(!c) return;
+    document.getElementById('contactModalTitle').textContent='Editar registro';
+    document.getElementById('fNombres').value  = c.nombres||'';
+    document.getElementById('fApellidos').value= c.apellidos||'';
+    document.getElementById('fTipoDoc').value  = c.tipoDoc||'CC';
+    document.getElementById('fDoc').value      = c.doc||'';
+    document.getElementById('fCel').value      = c.celular||'';
+    document.getElementById('fMunicipio').value= c.municipio||'';
+    document.getElementById('fBarrio').value   = c.barrio||'';
+    document.getElementById('fPuesto').value   = c.puesto||'';
+    document.getElementById('fEstado').value   = c.estado||'pending';
+    // Show existing cert
+    if(c.cert){
+      showCertPreview(c.cert.name, c.cert.size, null, true);
+    }
+  } else {
+    document.getElementById('contactModalTitle').textContent='Nuevo registro';
+    ['fNombres','fApellidos','fDoc','fCel','fMunicipio','fBarrio','fPuesto'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('fTipoDoc').value='CC';
+    document.getElementById('fEstado').value='pending';
+  }
+  document.getElementById('contactModal').classList.remove('hidden');
+  document.getElementById('fNombres').focus();
+}
+
+function saveContact(){
+  const nombres   = document.getElementById('fNombres').value.trim().toUpperCase();
+  const apellidos = document.getElementById('fApellidos').value.trim().toUpperCase();
+  const doc       = document.getElementById('fDoc').value.trim();
+  const celular   = document.getElementById('fCel').value.trim();
+  let valid = true;
+
+  if(!nombres||!apellidos){ toast('Nombres y apellidos son obligatorios'); return; }
+
+  if(!doc || doc.length < 10){
+    document.getElementById('errDoc').classList.add('show');
+    document.getElementById('fDoc').classList.add('error');
+    valid = false;
+  } else {
+    document.getElementById('errDoc').classList.remove('show');
+    document.getElementById('fDoc').classList.remove('error');
+  }
+
+  if(celular && celular.length !== 10){
+    document.getElementById('errCel').classList.add('show');
+    document.getElementById('fCel').classList.add('error');
+    valid = false;
+  } else {
+    document.getElementById('errCel').classList.remove('show');
+    document.getElementById('fCel').classList.remove('error');
+  }
+
+  if(!valid) return;
+
+  // Get existing cert if editing and no new cert uploaded
+  let cert = pendingCert;
+  if(editContactId && !cert){
+    const prev = contacts.find(c=>c.id===editContactId);
+    if(prev) cert = prev.cert || null;
+  }
+
+  const contact = {
+    id:        editContactId || 'C'+Date.now(),
+    lider:     currentUser.id,
+    liderNombre: currentUser.nombre,
+    nombres, apellidos,
+    tipoDoc:   document.getElementById('fTipoDoc').value,
+    doc, celular,
+    municipio: document.getElementById('fMunicipio').value.trim().toUpperCase(),
+    barrio:    document.getElementById('fBarrio').value.trim().toUpperCase(),
+    puesto:    document.getElementById('fPuesto').value.trim().toUpperCase(),
+    estado:    document.getElementById('fEstado').value,
+    cert,
+    fecha:     new Date().toLocaleDateString('es-CO'),
+  };
+
+  // Save locally
+  const myContacts = JSON.parse(localStorage.getItem(lKey(currentUser.id))||'[]');
+  if(editContactId){
+    const idx = myContacts.findIndex(c=>c.id===editContactId);
+    if(idx>=0) myContacts[idx]=contact; else myContacts.push(contact);
+    const gi = contacts.findIndex(c=>c.id===editContactId);
+    if(gi>=0) contacts[gi]=contact; else contacts.push(contact);
+  } else {
+    myContacts.push(contact);
     contacts.push(contact);
   }
+  localStorage.setItem(lKey(currentUser.id), JSON.stringify(myContacts));
 
-  localStorage.setItem(storageKey(), JSON.stringify(contacts));
-  hideLoading();
-  closeModal();
+  closeModal('contactModal');
   renderContacts();
   updateStats();
-  toast(editingId ? 'Contacto actualizado ✓' : 'Contacto guardado ✓');
+  toast(editContactId ? 'Registro actualizado ✓' : 'Registro guardado ✓');
+
+  // Sync to sheet in background
+  syncContactToSheet(contact);
 }
 
-async function deleteContact(id) {
-  if (!confirm('¿Eliminar este contacto?')) return;
-  showLoading('Eliminando...');
-  await deleteFromSheet(id);
-  contacts = contacts.filter(c => c.id !== id);
-  localStorage.setItem(storageKey(), JSON.stringify(contacts));
-  hideLoading();
-  renderContacts();
-  updateStats();
-  toast('Contacto eliminado');
+function syncContactToSheet(contact){
+  if(!gasReady) return;
+  const payload = { action:'save', lider:contact.lider, liderNombre:contact.liderNombre, contact };
+  const encoded = encodeURIComponent(JSON.stringify(payload));
+  fetch(`${GAS_URL}?data=${encoded}`)
+    .then(r=>r.json())
+    .then(d=>{ if(d.ok) toast('Sincronizado ✓',1800); })
+    .catch(()=>{});
 }
 
-async function toggleVoted(id) {
-  const c = contacts.find(x => x.id === id);
-  if (!c) return;
-  c.estado = c.estado === 'voted' ? 'pending' : 'voted';
-  showLoading('Actualizando...');
-  await saveToSheet(c);
-  localStorage.setItem(storageKey(), JSON.stringify(contacts));
-  hideLoading();
-  renderContacts();
-  updateStats();
-  toast(c.estado === 'voted' ? 'Marcado como confirmado ✓' : 'Marcado como pendiente');
+function deleteContact(id){
+  if(!confirm('¿Eliminar este registro?')) return;
+  contacts = contacts.filter(c=>c.id!==id);
+  const myContacts = JSON.parse(localStorage.getItem(lKey(currentUser.id))||'[]').filter(c=>c.id!==id);
+  localStorage.setItem(lKey(currentUser.id), JSON.stringify(myContacts));
+  renderContacts(); updateStats();
+  toast('Registro eliminado');
+  if(gasReady){ const e=encodeURIComponent(JSON.stringify({action:'delete',lider:currentUser.id,id})); fetch(`${GAS_URL}?data=${e}`); }
+}
+
+function toggleVoted(id){
+  const c = contacts.find(x=>x.id===id);
+  if(!c) return;
+  c.estado = c.estado==='voted' ? 'pending' : 'voted';
+  const myContacts = JSON.parse(localStorage.getItem(lKey(currentUser.id))||'[]');
+  const idx = myContacts.findIndex(x=>x.id===id);
+  if(idx>=0) myContacts[idx]=c;
+  localStorage.setItem(lKey(currentUser.id), JSON.stringify(myContacts));
+  renderContacts(); updateStats();
+  toast(c.estado==='voted' ? 'Confirmado ✓' : 'Marcado como pendiente');
+  syncContactToSheet(c);
 }
 
 // ══════════════════════════════════════════════════════════════════
-//  RENDER
+//  CERT UPLOAD
 // ══════════════════════════════════════════════════════════════════
-function setFilter(f, el) {
-  activeFilter = f;
-  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+function handleCert(file){
+  if(!file) return;
+  if(file.size > 5*1024*1024){ toast('El archivo supera 5MB'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    pendingCert = { name:file.name, size:file.size, base64:e.target.result };
+    showCertPreview(file.name, file.size, e.target.result);
+  };
+  reader.readAsDataURL(file);
+}
+
+function showCertPreview(name, size, base64, existing=false){
+  document.getElementById('certUploadZone').classList.add('hidden');
+  const prev = document.getElementById('certPreview');
+  prev.classList.remove('hidden');
+  prev.innerHTML = `
+    <div class="uploaded-file">
+      <span style="font-size:20px">${name.toLowerCase().endsWith('.pdf')?'📄':'🖼️'}</span>
+      <span class="fname">${escHtml(name)}</span>
+      <span class="fsize">${existing?'guardado':fmt(size)}</span>
+      <button class="fdelete" onclick="removeCert()" title="Eliminar archivo">×</button>
+    </div>
+    ${!existing && base64 ? `<div style="margin-top:8px;font-size:11px;color:var(--green)">✓ Listo para guardar</div>` : ''}
+  `;
+}
+
+function removeCert(){
+  pendingCert = null;
+  // If editing, also clear from contact
+  if(editContactId){
+    const c = contacts.find(x=>x.id===editContactId);
+    if(c) c.cert = null;
+  }
+  document.getElementById('certPreview').classList.add('hidden');
+  document.getElementById('certPreview').innerHTML='';
+  document.getElementById('certUploadZone').classList.remove('hidden');
+  document.getElementById('certInput').value='';
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  RENDER CONTACTS
+// ══════════════════════════════════════════════════════════════════
+function setFilter(f, el){
+  activeFilter=f;
+  document.querySelectorAll('.filter-tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
   renderContacts();
 }
 
-function renderContacts() {
-  const q = document.getElementById('searchInput').value.toLowerCase();
-  let list = contacts.filter(c => c.lider === currentLeader.id);
+function renderContacts(){
+  const q = (document.getElementById('searchInput').value||'').toLowerCase();
+  let list = currentUser.role==='admin' ? [...contacts] : contacts.filter(c=>c.lider===currentUser.id);
 
-  if (q) list = list.filter(c =>
-    `${c.nombres} ${c.apellidos}`.toLowerCase().includes(q) ||
-    c.doc.includes(q)
-  );
+  if(q) list = list.filter(c=>`${c.nombres} ${c.apellidos}`.toLowerCase().includes(q) || String(c.doc).includes(q));
+  if(activeFilter==='voted')   list = list.filter(c=>c.estado==='voted');
+  if(activeFilter==='pending') list = list.filter(c=>c.estado!=='voted');
+  if(activeFilter==='cert')    list = list.filter(c=>c.cert);
 
-  if (activeFilter === 'voted') list = list.filter(c => c.estado === 'voted');
-  if (activeFilter === 'pending') list = list.filter(c => c.estado !== 'voted');
-  if (activeFilter === 'cert') list = list.filter(c => c.files && c.files.length > 0);
-
-  const container = document.getElementById('contactsList');
-
-  if (list.length === 0) {
-    container.innerHTML = `
-      <div class="empty">
-        <div class="empty-icon">👥</div>
-        <h3>${q ? 'Sin resultados' : 'Sin contactos aún'}</h3>
-        <p>${q ? 'No se encontró ningún contacto con esa búsqueda.' : 'Agrega tu primer contacto tocando el botón <strong>Agregar</strong>.'}</p>
-      </div>`;
+  const el = document.getElementById('contactsList');
+  if(!list.length){
+    el.innerHTML=`<div class="empty"><div class="empty-icon">👥</div><h3>${q?'Sin resultados':'Sin registros aún'}</h3><p>${q?'No se encontró ningún registro.':'Toca <strong>Agregar</strong> para empezar.'}</p></div>`;
     return;
   }
 
-  container.innerHTML = list.map(c => {
-    const initials = (c.nombres.charAt(0) + c.apellidos.charAt(0)).toUpperCase();
-    const voted = c.estado === 'voted';
-    const hasCert = c.files && c.files.length > 0;
+  el.innerHTML = list.map(c=>{
+    const ini   = ((c.nombres||'').charAt(0)+(c.apellidos||'').charAt(0)).toUpperCase();
+    const voted = c.estado==='voted';
+    const hasCert = !!c.cert;
     const badge = voted
       ? `<span class="badge badge-voted">Confirmado</span>`
       : hasCert
         ? `<span class="badge badge-pending">Pendiente</span>`
-        : `<span class="badge badge-no-cert">Sin cert.</span>`;
+        : `<span class="badge badge-no">Sin cert.</span>`;
 
-    const filesHtml = hasCert ? `
-      <div class="files-preview">
-        ${c.files.map(f => `
-          <div class="file-chip" onclick="viewFile('${c.id}','${escHtml(f.name)}')">
-            📄 ${escHtml(f.name)}
-          </div>`).join('')}
-      </div>` : '';
+    const certBtn = hasCert
+      ? `<div class="cert-chip has-file" onclick="viewCert('${c.id}')">📄 Ver certificado</div>`
+      : `<div class="cert-chip">📎 Sin certificado</div>`;
 
-    return `
-      <div class="contact-card ${voted ? 'voted' : 'pending'}" id="card_${c.id}">
-        <div class="contact-header">
-          <div class="contact-avatar">${initials}</div>
-          <div class="contact-info">
-            <div class="contact-name">${escHtml(c.nombres)} ${escHtml(c.apellidos)}</div>
-            <div class="contact-doc">${c.tipoDoc} ${escHtml(c.doc)}</div>
-          </div>
-          ${badge}
+    // Show leader name for admin view
+    const leaderInfo = currentUser.role==='admin' && c.liderNombre
+      ? `<div class="meta-item"><strong>Líder:</strong> ${escHtml(c.liderNombre)}</div>` : '';
+
+    return `<div class="contact-card ${voted?'voted':'pending'}">
+      <div class="contact-header">
+        <div class="contact-avatar">${ini}</div>
+        <div class="contact-info">
+          <div class="contact-name">${escHtml(c.nombres)} ${escHtml(c.apellidos)}</div>
+          <div class="contact-doc">${escHtml(c.tipoDoc||'CC')} ${escHtml(c.doc)}</div>
         </div>
-        <div class="contact-meta">
-          ${c.celular ? `<div class="meta-item"><strong>📱</strong> ${escHtml(c.celular)}</div>` : ''}
-          ${c.municipio ? `<div class="meta-item"><strong>📍</strong> ${escHtml(c.municipio)}</div>` : ''}
-          ${c.puesto ? `<div class="meta-item"><strong>🗳️</strong> ${escHtml(c.puesto)}</div>` : ''}
-        </div>
-        ${filesHtml}
-        <div class="contact-actions">
-          <button class="btn-sm ${voted ? 'success' : ''}" onclick="toggleVoted('${c.id}')">
-            ${voted ? '✓ Confirmado' : '◯ Confirmar voto'}
-          </button>
-          <button class="btn-sm" onclick="openModal('${c.id}')">✏️ Editar</button>
-          <button class="btn-sm danger" onclick="deleteContact('${c.id}')">🗑️</button>
-        </div>
-      </div>`;
+        ${badge}
+      </div>
+      <div class="contact-meta">
+        ${c.celular?`<div class="meta-item"><strong>📱</strong> ${escHtml(c.celular)}</div>`:''}
+        ${c.municipio?`<div class="meta-item"><strong>📍</strong> ${escHtml(c.municipio)}</div>`:''}
+        ${c.puesto?`<div class="meta-item"><strong>🗳️</strong> ${escHtml(c.puesto)}</div>`:''}
+        ${leaderInfo}
+      </div>
+      ${certBtn}
+      <div class="contact-actions">
+        <button class="btn-sm ${voted?'success':''}" onclick="toggleVoted('${c.id}')">
+          ${voted?'✓ Confirmado':'◯ Confirmar voto'}
+        </button>
+        <button class="btn-sm" onclick="openContactModal('${c.id}')">✏️ Editar</button>
+        <button class="btn-sm danger" onclick="deleteContact('${c.id}')">🗑️</button>
+      </div>
+    </div>`;
   }).join('');
 }
 
-function updateStats() {
-  const mine = contacts.filter(c => c.lider === currentLeader.id);
-  document.getElementById('statTotal').textContent = mine.length;
-  document.getElementById('statCert').textContent = mine.filter(c => c.files && c.files.length > 0).length;
-  document.getElementById('statVoted').textContent = mine.filter(c => c.estado === 'voted').length;
+function updateStats(){
+  const list = currentUser.role==='admin' ? contacts : contacts.filter(c=>c.lider===currentUser.id);
+  document.getElementById('statTotal').textContent = list.length;
+  document.getElementById('statCert').textContent  = list.filter(c=>c.cert).length;
+  document.getElementById('statVoted').textContent = list.filter(c=>c.estado==='voted').length;
 }
 
-// ══════════════════════════════════════════════════════════════════
-//  MODAL
-// ══════════════════════════════════════════════════════════════════
-function openModal(id = null) {
-  editingId = id;
-  pendingFiles = [];
-  document.getElementById('uploadedFiles').innerHTML = '';
-
-  if (id) {
-    const c = contacts.find(x => x.id === id);
-    if (!c) return;
-    document.getElementById('modalTitleText').textContent = 'Editar contacto';
-    document.getElementById('fNombres').value = c.nombres;
-    document.getElementById('fApellidos').value = c.apellidos;
-    document.getElementById('fTipoDoc').value = c.tipoDoc;
-    document.getElementById('fDoc').value = c.doc;
-    document.getElementById('fCel').value = c.celular || '';
-    document.getElementById('fMunicipio').value = c.municipio || '';
-    document.getElementById('fBarrio').value = c.barrio || '';
-    document.getElementById('fPuesto').value = c.puesto || '';
-    document.getElementById('fEstado').value = c.estado || 'pending';
-    // Show existing files
-    if (c.files && c.files.length) {
-      c.files.forEach(f => addFileChip(f.name, f.size, null, true));
-    }
-  } else {
-    document.getElementById('modalTitleText').textContent = 'Nuevo contacto';
-    ['fNombres','fApellidos','fDoc','fCel','fMunicipio','fBarrio','fPuesto'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('fTipoDoc').value = 'CC';
-    document.getElementById('fEstado').value = 'pending';
-  }
-
-  document.getElementById('btnSave').disabled = false;
-  document.getElementById('btnSave').innerHTML = 'Guardar contacto';
-  document.getElementById('modalOverlay').classList.remove('hidden');
-  document.getElementById('fNombres').focus();
-}
-
-function closeModal() { document.getElementById('modalOverlay').classList.add('hidden'); }
-function closeModalOutside(e) { if (e.target === document.getElementById('modalOverlay')) closeModal(); }
-
-// ══════════════════════════════════════════════════════════════════
-//  FILES
-// ══════════════════════════════════════════════════════════════════
-function handleFiles(files) {
-  [...files].forEach(file => {
-    if (file.size > 5 * 1024 * 1024) { toast(`${file.name} supera 5MB`); return; }
-    const reader = new FileReader();
-    reader.onload = e => {
-      const base64 = e.target.result;
-      pendingFiles.push({ name: file.name, size: file.size, base64 });
-      addFileChip(file.name, file.size, base64);
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
-function addFileChip(name, size, base64, existing = false) {
-  const div = document.createElement('div');
-  div.className = 'uploaded-file';
-  div.innerHTML = `
-    <span style="font-size:18px">${name.endsWith('.pdf') ? '📄' : '🖼️'}</span>
-    <span class="fname">${escHtml(name)}</span>
-    <span class="fsize">${existing ? 'guardado' : formatSize(size)}</span>
-    ${!existing ? `<button class="fdelete" onclick="removeFile('${escHtml(name)}',this.parentElement)">×</button>` : ''}
-  `;
-  document.getElementById('uploadedFiles').appendChild(div);
-}
-
-function removeFile(name, el) {
-  pendingFiles = pendingFiles.filter(f => f.name !== name);
-  el.remove();
-}
-
-function dragOver(e) { e.preventDefault(); document.getElementById('uploadZone').classList.add('dragover'); }
-function dragLeave() { document.getElementById('uploadZone').classList.remove('dragover'); }
-function dropFiles(e) {
-  e.preventDefault();
-  dragLeave();
-  handleFiles(e.dataTransfer.files);
-}
-
-function viewFile(contactId, fileName) {
-  const c = contacts.find(x => x.id === contactId);
-  if (!c) return;
-  const f = c.files.find(x => x.name === fileName);
-  if (!f || !f.data) return toast('Archivo no disponible');
-  const win = window.open();
-  if (f.data.startsWith('data:image')) {
-    win.document.write(`<img src="${f.data}" style="max-width:100%">`);
-  } else {
-    win.location = f.data;
+function viewCert(id){
+  const c = contacts.find(x=>x.id===id);
+  if(!c||!c.cert) return toast('Sin certificado');
+  if(c.cert.url){ window.open(c.cert.url,'_blank'); return; }
+  if(c.cert.base64){
+    const win=window.open();
+    if(c.cert.base64.startsWith('data:image')) win.document.write(`<img src="${c.cert.base64}" style="max-width:100%">`);
+    else win.location=c.cert.base64;
   }
 }
 
 // ══════════════════════════════════════════════════════════════════
-//  UI HELPERS
+//  MODAL HELPERS
 // ══════════════════════════════════════════════════════════════════
-function showLoading(msg = 'Cargando...') {
-  document.getElementById('loadingMsg').textContent = msg;
-  document.getElementById('loading').classList.remove('hidden');
-}
-function hideLoading() { document.getElementById('loading').classList.add('hidden'); }
-
-function toast(msg, duration = 2800) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), duration);
-}
-
-function escHtml(str) {
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function formatSize(bytes) {
-  if (bytes < 1024) return bytes + 'B';
-  if (bytes < 1024*1024) return (bytes/1024).toFixed(0) + 'KB';
-  return (bytes/1024/1024).toFixed(1) + 'MB';
-}
+function closeModal(id){ document.getElementById(id).classList.add('hidden'); }
+function closeIfOutside(e,id){ if(e.target===document.getElementById(id)) closeModal(id); }
 </script>
 </body>
 </html>
