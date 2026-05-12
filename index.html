@@ -529,15 +529,22 @@ function startApp(){
   document.getElementById('userName').textContent = currentUser.nombre.split(' ')[0];
   document.getElementById('userAvatar').textContent = currentUser.nombre.charAt(0).toUpperCase();
 
-  if(currentUser.role === 'admin'){
-    document.getElementById('adminTabs').classList.remove('hidden');
+  const isAdmin = currentUser.role === 'admin';
+
+  // Mostrar/ocultar tabs de admin estrictamente
+  document.getElementById('adminTabs').classList.toggle('hidden', !isAdmin);
+  document.getElementById('panelLeaders').classList.add('hidden');
+  document.getElementById('panelContacts').classList.remove('hidden');
+
+  if(isAdmin){
     document.getElementById('topSub').textContent = 'Administrador · UNISCA';
     document.getElementById('contactsTitle').textContent = 'Todos los registros';
     loadLeaders();
   } else {
-    document.getElementById('adminTabs').classList.add('hidden');
     document.getElementById('topSub').textContent = currentUser.zona ? 'Zona: '+currentUser.zona : 'Líder';
     document.getElementById('contactsTitle').textContent = 'Mis contactos';
+    // Asegurarse que líder no pueda acceder al panel de líderes
+    document.getElementById('panelLeaders').remove && null;
   }
 
   loadContacts();
