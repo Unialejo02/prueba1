@@ -123,6 +123,7 @@ body {
   background: var(--gray-50);
   color: var(--gray-800);
   transition: border .2s, box-shadow .2s;
+  text-transform: uppercase;
   margin-bottom: 16px;
 }
 
@@ -395,6 +396,7 @@ body {
   font-family: var(--font); color: var(--gray-800);
   background: var(--gray-50);
   transition: border .2s, box-shadow .2s;
+  text-transform: uppercase;
 }
 
 .form-group input:focus,
@@ -856,8 +858,8 @@ async function deleteFromSheet(id) {
 //  CONTACTS — CRUD
 // ══════════════════════════════════════════════════════════════════
 async function saveContact() {
-  const nombres = document.getElementById('fNombres').value.trim();
-  const apellidos = document.getElementById('fApellidos').value.trim();
+  const nombres = document.getElementById('fNombres').value.trim().toUpperCase();
+  const apellidos = document.getElementById('fApellidos').value.trim().toUpperCase();
   const doc = document.getElementById('fDoc').value.trim();
 
   if (!nombres || !apellidos || !doc) return toast('Nombre y documento son obligatorios');
@@ -868,9 +870,9 @@ async function saveContact() {
     tipoDoc: document.getElementById('fTipoDoc').value,
     doc,
     celular: document.getElementById('fCel').value.trim(),
-    municipio: document.getElementById('fMunicipio').value.trim(),
-    barrio: document.getElementById('fBarrio').value.trim(),
-    puesto: document.getElementById('fPuesto').value.trim(),
+    municipio: document.getElementById('fMunicipio').value.trim().toUpperCase(),
+    barrio: document.getElementById('fBarrio').value.trim().toUpperCase(),
+    puesto: document.getElementById('fPuesto').value.trim().toUpperCase(),
     estado: document.getElementById('fEstado').value,
     files: pendingFiles.map(f => ({ name: f.name, size: f.size, data: f.base64 })),
     fecha: new Date().toLocaleDateString('es-CO'),
