@@ -519,6 +519,28 @@ function togglePass(){
   }
 }
 
+// Líderes registrados — se actualiza automáticamente al crear/editar desde admin
+const LEADERS_BACKUP = [
+  {"id":"L1778595593118","nombre":"DIANA GUANGA","user":"diana.guanga","pass":"Cali2026@","zona":"","role":"leader","fecha":"17/5/2026"},
+  {"id":"L1778595751976","nombre":"ALEJANDRO UNI","user":"alejandro.uni","pass":"Cali2026@","zona":"POBLADO 2","role":"leader","fecha":"12/5/2026"},
+  {"id":"L1779039743318","nombre":"ALEJANDRA UNI","user":"alejandra.uni","pass":"Cali2026*","zona":"VALLE DEL LILI","role":"leader","fecha":"17/5/2026"}
+];
+
+function findLeader(user, pass){
+  // 1. Check localStorage
+  loadLeaders();
+  let found = leaders.find(l => l.user.toLowerCase() === user.toLowerCase() && l.pass === pass);
+  if(found) return found;
+  // 2. Check hardcoded backup (works on any device without localStorage)
+  found = LEADERS_BACKUP.find(l => l.user.toLowerCase() === user.toLowerCase() && l.pass === pass);
+  if(found){
+    // Merge into localStorage for future use
+    if(!leaders.find(l=>l.id===found.id)) leaders.push(found);
+    saveLeaders();
+  }
+  return found || null;
+}
+
 function doLogin(){
   const user = document.getElementById('loginUser').value.trim();
   const pass = document.getElementById('loginPass').value;
@@ -534,38 +556,15 @@ function doLogin(){
     startApp(); return;
   }
 
-  // Check leaders locally first
-  loadLeaders();
-  const leader = leaders.find(l => l.user.toLowerCase() === user.toLowerCase() && l.pass === pass);
+  // Check leaders (local + backup)
+  const leader = findLeader(user, pass);
   if(leader){
     currentUser = {...leader, role:'leader'};
     sessionStorage.setItem('usc_session', JSON.stringify(currentUser));
     startApp(); return;
   }
 
-  // Not found locally — check sheet (for other devices)
-  if(gasReady){
-    err.textContent = 'Verificando...';
-    fetch(`${GAS_URL}?action=getLeaders`)
-      .then(r=>r.json())
-      .then(data=>{
-        if(data.leaders){
-          // Save to local for future use
-          localStorage.setItem(leadersKey(), JSON.stringify(data.leaders));
-          leaders = data.leaders;
-          const found = data.leaders.find(l => l.user.toLowerCase() === user.toLowerCase() && l.pass === pass);
-          if(found){
-            currentUser = {...found, role:'leader'};
-            sessionStorage.setItem('usc_session', JSON.stringify(currentUser));
-            startApp(); return;
-          }
-        }
-        err.textContent = 'Usuario o contraseña incorrectos';
-      })
-      .catch(()=>{ err.textContent = 'Usuario o contraseña incorrectos'; });
-  } else {
-    err.textContent = 'Usuario o contraseña incorrectos';
-  }
+  err.textContent = 'Usuario o contraseña incorrectos';
 }
 
 function doLogout(){
