@@ -346,6 +346,12 @@ body{font-family:var(--font);background:var(--gray-50);color:var(--gray-800);min
           Nuevo líder
         </button>
       </div>
+      <div id="migrateWrap" style="margin-bottom:12px">
+        <button class="btn-add" style="background:var(--navy);color:white;width:100%;justify-content:center"
+          onclick="migrateLeadersToSheet()">
+          ☁️ Sincronizar líderes al servidor
+        </button>
+      </div>
       <div class="leader-cards" id="leaderList"></div>
     </div>
 
@@ -672,6 +678,21 @@ function saveLeader(){
   closeModal('leaderModal');
   renderLeaders();
   toast(editLeaderId ? 'Líder actualizado ✓' : 'Líder creado ✓');
+}
+
+function migrateLeadersToSheet(){
+  if(!gasReady){ toast('Sin conexión al servidor'); return; }
+  loadLeaders();
+  if(!leaders.length){ toast('No hay líderes para sincronizar'); return; }
+  toast('Sincronizando ' + leaders.length + ' líderes...', 4000);
+  let done = 0;
+  leaders.forEach(l => {
+    const payload = encodeURIComponent(JSON.stringify({ action:'saveLeader', leader:l }));
+    fetch(`${GAS_URL}?data=${payload}`)
+      .then(r=>r.json())
+      .then(d=>{ done++; if(done===leaders.length) toast('✓ ' + done + ' líderes sincronizados. Ya pueden entrar desde celular.', 4000); })
+      .catch(()=>{ done++; });
+  });
 }
 
 function deleteLeader(id){
