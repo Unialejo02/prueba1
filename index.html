@@ -783,11 +783,16 @@ function startApp(){
     document.getElementById('btnAgregarContacto').classList.remove('hidden');
     document.getElementById('leaderFilterWrap').classList.add('hidden');
     document.getElementById('staffTabs').classList.remove('hidden');
-    // Load all leaders so staff can see their assigned ones
+    // Load all leaders first so staff can see assigned ones
     fetch(`${GAS_URL}?action=getLeaders`)
       .then(r=>r.json())
-      .then(d=>{ if(d.leaders){ leaders=d.leaders; localStorage.setItem(leadersKey(),JSON.stringify(leaders)); } })
-      .catch(()=>{ loadLeaders(); });
+      .then(d=>{
+        if(d.leaders){ leaders=d.leaders; localStorage.setItem(leadersKey(),JSON.stringify(leaders)); }
+        // Now load contacts (syncFromSheet needs leaders loaded first)
+        loadContacts();
+      })
+      .catch(()=>{ loadLeaders(); loadContacts(); });
+    return; // loadContacts called inside fetch above
   } else {
     // Load leaders to find staff name
     fetch(`${GAS_URL}?action=getLeaders`)
@@ -1161,22 +1166,50 @@ function populateLeaderFilter(){
 }
 
 function syncFromSheet(){
-  const lid = currentUser.role==='admin' ? 'ALL' : currentUser.id;
-  fetch(`${GAS_URL}?action=get&lider=${lid}`)
-    .then(r=>r.json())
-    .then(data=>{
-      if(data.contacts && data.contacts.length){
-        if(currentUser.role==='admin'){
-          contacts = data.contacts;
-        } else {
+  if(currentUser.role==='admin'){
+    // Admin: get all contacts
+    fetch(`${GAS_URL}?action=get&lider=ALL`)
+      .then(r=>r.json())
+      .then(data=>{
+        if(data.contacts && data.contacts.length) contacts = data.contacts;
+        populateLeaderFilter();
+        renderContacts(); updateStats();
+      })
+      .catch(()=>{ populateLeaderFilter(); renderContacts(); updateStats(); });
+
+  } else if(currentUser.role==='staff'){
+    // Staff: get own contacts + contacts of all assigned leaders
+    const myLeaders = leaders.filter(l => l.staffAsignado === currentUser.id && l.tipo !== 'staff');
+    const liderIds  = [currentUser.id, ...myLeaders.map(l=>l.id)];
+    // Fetch all contacts and filter
+    fetch(`${GAS_URL}?action=get&lider=ALL`)
+      .then(r=>r.json())
+      .then(data=>{
+        if(data.contacts && data.contacts.length){
+          contacts = data.contacts.filter(c => liderIds.includes(c.lider));
+          localStorage.setItem(lKey(currentUser.id), JSON.stringify(contacts.filter(c=>c.lider===currentUser.id)));
+        }
+        renderContacts(); updateStats();
+        // Re-render leaders tab if open
+        if(document.getElementById('panelMyLeaders') && !document.getElementById('panelMyLeaders').classList.contains('hidden')){
+          renderMyLeaders();
+        }
+      })
+      .catch(()=>{ renderContacts(); updateStats(); });
+
+  } else {
+    // Líder: solo sus propios contactos
+    fetch(`${GAS_URL}?action=get&lider=${currentUser.id}`)
+      .then(r=>r.json())
+      .then(data=>{
+        if(data.contacts && data.contacts.length){
           contacts = data.contacts;
           localStorage.setItem(lKey(currentUser.id), JSON.stringify(contacts));
         }
-      }
-      populateLeaderFilter();
-      renderContacts(); updateStats();
-    })
-    .catch(()=>{ populateLeaderFilter(); renderContacts(); updateStats(); });
+        renderContacts(); updateStats();
+      })
+      .catch(()=>{ renderContacts(); updateStats(); });
+  }
 }
 
 function currentContacts(){
