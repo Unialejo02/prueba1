@@ -454,7 +454,7 @@ body{font-family:var(--font);background:var(--gray-50);color:var(--gray-800);min
 
       <!-- Filtro por líder (solo admin) -->
       <div id="leaderFilterWrap" class="hidden" style="margin-bottom:12px">
-        <select id="leaderFilter" onchange="renderContacts()"
+        <select id="leaderFilter" onchange="renderContacts();updateStats()"
           style="width:100%;padding:9px 14px;border:1.5px solid var(--gray-200);border-radius:var(--r);
           font-size:13px;font-family:var(--font);color:var(--gray-800);background:white;cursor:pointer">
           <option value="">👥 Todos los líderes</option>
@@ -1417,7 +1417,13 @@ function renderContacts(){
 }
 
 function updateStats(){
-  const list = currentUser.role==='admin' ? contacts : contacts.filter(c=>c.lider===currentUser.id);
+  let list;
+  if(currentUser.role==='admin'){
+    const liderFiltro = document.getElementById('leaderFilter') ? document.getElementById('leaderFilter').value : '';
+    list = liderFiltro ? contacts.filter(c=>c.lider===liderFiltro) : [...contacts];
+  } else {
+    list = contacts.filter(c=>c.lider===currentUser.id);
+  }
   document.getElementById('statTotal').textContent = list.length;
   document.getElementById('statCert').textContent  = list.filter(c=>c.cert).length;
   document.getElementById('statVoted').textContent = list.filter(c=>c.estado==='voted').length;
