@@ -840,11 +840,23 @@ function saveContact(){
 function syncContactToSheet(contact){
   if(!gasReady) return;
   const payload = { action:'save', lider:contact.lider, liderNombre:contact.liderNombre, contact };
-  const encoded = encodeURIComponent(JSON.stringify(payload));
-  fetch(`${GAS_URL}?data=${encoded}`)
+  // Use POST so the base64 cert doesn't overflow URL length limits
+  fetch(GAS_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify(payload)
+  })
     .then(r=>r.json())
     .then(d=>{ if(d.ok) toast('Sincronizado ✓',1800); })
-    .catch(()=>{});
+    .catch(()=>{
+      // Fallback: GET without cert base64 (metadata only)
+      const safe = Object.assign({}, payload);
+      if(safe.contact && safe.contact.cert && safe.contact.cert.base64){
+        safe.contact = Object.assign({}, safe.contact, { cert: { name: safe.contact.cert.name, size: safe.contact.cert.size, url: safe.contact.cert.url||'' } });
+      }
+      const encoded = encodeURIComponent(JSON.stringify(safe));
+      fetch(`${GAS_URL}?data=${encoded}`).catch(()=>{});
+    });
 }
 
 function deleteContact(id){
