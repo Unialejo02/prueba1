@@ -682,16 +682,18 @@ function saveLeader(){
 
 function migrateLeadersToSheet(){
   if(!gasReady){ toast('Sin conexión al servidor'); return; }
-  loadLeaders();
-  if(!leaders.length){ toast('No hay líderes para sincronizar'); return; }
-  toast('Sincronizando ' + leaders.length + ' líderes...', 4000);
+  // Read directly from localStorage to avoid state issues
+  const raw = localStorage.getItem('usc_leaders');
+  const list = raw ? JSON.parse(raw) : [];
+  if(!list.length){ toast('No hay líderes en localStorage'); return; }
+  toast('Sincronizando ' + list.length + ' líderes...', 4000);
   let done = 0;
-  leaders.forEach(l => {
+  list.forEach(l => {
     const payload = encodeURIComponent(JSON.stringify({ action:'saveLeader', leader:l }));
     fetch(`${GAS_URL}?data=${payload}`)
       .then(r=>r.json())
-      .then(d=>{ done++; if(done===leaders.length) toast('✓ ' + done + ' líderes sincronizados. Ya pueden entrar desde celular.', 4000); })
-      .catch(()=>{ done++; });
+      .then(d=>{ done++; if(done===list.length) toast('✓ ' + done + ' líderes sincronizados. Ya pueden entrar desde celular.', 5000); })
+      .catch(()=>{ done++; if(done===list.length) toast('Error sincronizando algunos líderes', 4000); });
   });
 }
 
