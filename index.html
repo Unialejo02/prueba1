@@ -1077,7 +1077,14 @@ function showStaffTab(tab, el){
     renderContacts(); updateStats();
   } else if(tab==='myLeaders'){
     document.getElementById('panelMyLeaders').classList.remove('hidden');
-    renderMyLeaders();
+    // Reload leaders from sheet to ensure fresh data
+    fetch(`${GAS_URL}?action=getLeaders`)
+      .then(r=>r.json())
+      .then(d=>{
+        if(d.leaders){ leaders=d.leaders; localStorage.setItem(leadersKey(),JSON.stringify(leaders)); }
+        renderMyLeaders();
+      })
+      .catch(()=>renderMyLeaders());
   }
 }
 
