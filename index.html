@@ -429,6 +429,12 @@ body{font-family:var(--font);background:var(--gray-50);color:var(--gray-800);min
     <div class="nav-tab" onclick="showAdminTab('staff',this)">⭐ Staff</div>
   </div>
 
+  <!-- Staff nav tabs -->
+  <div class="nav-tabs hidden" id="staffTabs">
+    <div class="nav-tab active" onclick="showStaffTab('myContacts',this)">📋 Mis registros</div>
+    <div class="nav-tab" onclick="showStaffTab('myLeaders',this)">👥 Mis líderes</div>
+  </div>
+
   <div class="main">
 
     <!-- ── PANEL CONTACTOS ──────────────────────────────── -->
@@ -494,7 +500,6 @@ body{font-family:var(--font);background:var(--gray-50);color:var(--gray-800);min
       <div class="section-head">
         <h2>Vista Staff</h2>
       </div>
-      <!-- Selector de staff -->
       <div style="margin-bottom:16px">
         <select id="staffSelector" onchange="renderStaffView()"
           style="width:100%;padding:10px 14px;border:1.5px solid var(--gray-200);border-radius:var(--r);
@@ -503,6 +508,14 @@ body{font-family:var(--font);background:var(--gray-50);color:var(--gray-800);min
         </select>
       </div>
       <div id="staffViewContent"></div>
+    </div>
+
+    <!-- ── PANEL MIS LÍDERES (solo staff) ──────────────────── -->
+    <div id="panelMyLeaders" class="hidden">
+      <div class="section-head">
+        <h2>Mis líderes asignados</h2>
+      </div>
+      <div id="myLeadersList"></div>
     </div>
 
   </div>
@@ -769,8 +782,25 @@ function startApp(){
     document.getElementById('contactsTitle').textContent = 'Mis registros';
     document.getElementById('btnAgregarContacto').classList.remove('hidden');
     document.getElementById('leaderFilterWrap').classList.add('hidden');
+    document.getElementById('staffTabs').classList.remove('hidden');
+    // Load all leaders so staff can see their assigned ones
+    fetch(`${GAS_URL}?action=getLeaders`)
+      .then(r=>r.json())
+      .then(d=>{ if(d.leaders){ leaders=d.leaders; localStorage.setItem(leadersKey(),JSON.stringify(leaders)); } })
+      .catch(()=>{ loadLeaders(); });
   } else {
-    document.getElementById('topSub').textContent = currentUser.zona ? 'Zona: '+currentUser.zona : 'Líder';
+    // Load leaders to find staff name
+    fetch(`${GAS_URL}?action=getLeaders`)
+      .then(r=>r.json())
+      .then(d=>{
+        if(d.leaders){ leaders=d.leaders; localStorage.setItem(leadersKey(),JSON.stringify(leaders)); }
+        const staffMember = currentUser.staffAsignado ? leaders.find(l=>l.id===currentUser.staffAsignado) : null;
+        const subText = staffMember ? `Líder · ${staffMember.nombre}` : (currentUser.zona ? 'Zona: '+currentUser.zona : 'Líder');
+        document.getElementById('topSub').textContent = subText;
+      })
+      .catch(()=>{
+        document.getElementById('topSub').textContent = currentUser.zona ? 'Zona: '+currentUser.zona : 'Líder';
+      });
     document.getElementById('contactsTitle').textContent = 'Mis contactos';
     document.getElementById('btnAgregarContacto').classList.remove('hidden');
     document.getElementById('leaderFilterWrap').classList.add('hidden');
@@ -1024,6 +1054,60 @@ function renderLeaders(){
 // ══════════════════════════════════════════════════════════════════
 //  ADMIN TABS
 // ══════════════════════════════════════════════════════════════════
+function showStaffTab(tab, el){
+  document.querySelectorAll('#staffTabs .nav-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('panelContacts').classList.add('hidden');
+  document.getElementById('panelMyLeaders').classList.add('hidden');
+  if(tab==='myContacts'){
+    document.getElementById('panelContacts').classList.remove('hidden');
+    renderContacts(); updateStats();
+  } else if(tab==='myLeaders'){
+    document.getElementById('panelMyLeaders').classList.remove('hidden');
+    renderMyLeaders();
+  }
+}
+
+function renderMyLeaders(){
+  const el = document.getElementById('myLeadersList');
+  if(!el) return;
+  // Leaders assigned to current staff user
+  const myLeaders = leaders.filter(l => l.staffAsignado === currentUser.id && l.tipo !== 'staff');
+  if(!myLeaders.length){
+    el.innerHTML = `<div class="empty"><div class="empty-icon">👥</div><h3>Sin líderes asignados</h3><p>El administrador aún no te ha asignado líderes.</p></div>`;
+    return;
+  }
+  el.innerHTML = myLeaders.map(l => {
+    const lc    = contacts.filter(c => c.lider === l.id);
+    const voted = lc.filter(c => c.estado === 'voted').length;
+    const cert  = lc.filter(c => c.cert).length;
+    const ini   = l.nombre.charAt(0).toUpperCase();
+    return `<div class="leader-card" style="margin-bottom:10px;flex-direction:column;align-items:flex-start">
+      <div style="display:flex;align-items:center;gap:12px;width:100%">
+        <div class="leader-av">${ini}</div>
+        <div class="leader-info">
+          <div class="leader-name">${escHtml(l.nombre)}</div>
+          <div class="leader-user">@${escHtml(l.user)} ${l.zona?'· '+escHtml(l.zona):''}</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;margin-top:10px">
+        <div style="text-align:center;background:var(--gray-50);border-radius:8px;padding:10px;border-top:2px solid var(--teal)">
+          <div style="font-size:22px;font-weight:700;color:var(--teal)">${lc.length}</div>
+          <div style="font-size:10px;color:var(--gray-400);margin-top:2px">Registros</div>
+        </div>
+        <div style="text-align:center;background:var(--gray-50);border-radius:8px;padding:10px;border-top:2px solid var(--dark)">
+          <div style="font-size:22px;font-weight:700;color:var(--dark)">${cert}</div>
+          <div style="font-size:10px;color:var(--gray-400);margin-top:2px">Con cert.</div>
+        </div>
+        <div style="text-align:center;background:var(--gray-50);border-radius:8px;padding:10px;border-top:2px solid var(--green)">
+          <div style="font-size:22px;font-weight:700;color:var(--green)">${voted}</div>
+          <div style="font-size:10px;color:var(--gray-400);margin-top:2px">Confirmados</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
 function showAdminTab(tab, el){
   adminTab = tab;
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
