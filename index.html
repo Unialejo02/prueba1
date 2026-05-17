@@ -843,8 +843,12 @@ function openContactModal(id=null){
 function saveContact(){
   const nombres   = document.getElementById('fNombres').value.trim().toUpperCase();
   const apellidos = document.getElementById('fApellidos').value.trim().toUpperCase();
-  const doc       = document.getElementById('fDoc').value.trim();
-  const celular   = document.getElementById('fCel').value.trim();
+  // Strip any non-numeric characters (spaces, dashes) that mobile keyboards may add
+  const doc     = document.getElementById('fDoc').value.replace(/\D/g,'').trim();
+  const celular = document.getElementById('fCel').value.replace(/\D/g,'').trim();
+  // Update fields with cleaned values
+  document.getElementById('fDoc').value = doc;
+  document.getElementById('fCel').value = celular;
   let valid = true;
 
   if(!nombres||!apellidos){ toast('Nombres y apellidos son obligatorios'); return; }
@@ -852,6 +856,7 @@ function saveContact(){
   if(!doc || doc.length < 10){
     document.getElementById('errDoc').classList.add('show');
     document.getElementById('fDoc').classList.add('error');
+    toast('El documento debe tener mínimo 10 dígitos');
     valid = false;
   } else {
     document.getElementById('errDoc').classList.remove('show');
@@ -861,6 +866,7 @@ function saveContact(){
   if(celular && celular.length !== 10){
     document.getElementById('errCel').classList.add('show');
     document.getElementById('fCel').classList.add('error');
+    toast('El celular debe tener exactamente 10 dígitos');
     valid = false;
   } else {
     document.getElementById('errCel').classList.remove('show');
@@ -981,13 +987,37 @@ function toggleVoted(id){
 // ══════════════════════════════════════════════════════════════════
 function handleCert(file){
   if(!file) return;
-  if(file.size > 5*1024*1024){ toast('El archivo supera 5MB'); return; }
-  const reader = new FileReader();
-  reader.onload = e => {
-    pendingCert = { name:file.name, size:file.size, base64:e.target.result };
-    showCertPreview(file.name, file.size, e.target.result);
-  };
-  reader.readAsDataURL(file);
+  if(file.size > 10*1024*1024){ toast('El archivo supera 10MB'); return; }
+
+  // If it's an image, compress it before storing
+  if(file.type.startsWith('image/')){
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+    img.onload = function(){
+      URL.revokeObjectURL(objectUrl);
+      const canvas = document.createElement('canvas');
+      const MAX = 1200;
+      let w = img.width, h = img.height;
+      if(w > MAX || h > MAX){
+        if(w > h){ h = Math.round(h * MAX / w); w = MAX; }
+        else { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      const base64 = canvas.toDataURL('image/jpeg', 0.7);
+      pendingCert = { name: file.name.replace(/\.[^.]+$/, '.jpg'), size: file.size, base64 };
+      showCertPreview(pendingCert.name, file.size, base64);
+    };
+    img.src = objectUrl;
+  } else {
+    // PDF — read as-is
+    const reader = new FileReader();
+    reader.onload = e => {
+      pendingCert = { name:file.name, size:file.size, base64:e.target.result };
+      showCertPreview(file.name, file.size, e.target.result);
+    };
+    reader.readAsDataURL(file);
+  }
 }
 
 function showCertPreview(name, size, base64, existing=false){
