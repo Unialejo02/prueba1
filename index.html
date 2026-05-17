@@ -1155,23 +1155,19 @@ function showAdminTab(tab, el){
 // ══════════════════════════════════════════════════════════════════
 function loadContacts(){
   if(currentUser.role==='admin'){
-    // Load all contacts from all leaders
-    loadLeaders();
+    // Admin siempre carga desde el sheet — nunca desde localStorage
     contacts = [];
-    leaders.forEach(l=>{
-      const raw = localStorage.getItem(lKey(l.id));
-      if(raw) contacts = contacts.concat(JSON.parse(raw));
-    });
-    // Also load admin's own if any
-    const adminRaw = localStorage.getItem(lKey('ADMIN'));
-    if(adminRaw) contacts = contacts.concat(JSON.parse(adminRaw));
+    loadLeaders();
+    populateLeaderFilter();
+    if(gasReady) syncFromSheet();
+    else { renderContacts(); updateStats(); }
   } else {
+    // Líderes y staff cargan local primero, luego sincronizan
     const raw = localStorage.getItem(lKey(currentUser.id));
     contacts = raw ? JSON.parse(raw) : [];
+    if(gasReady) syncFromSheet();
+    else { renderContacts(); updateStats(); }
   }
-
-  if(gasReady) syncFromSheet();
-  else { renderContacts(); updateStats(); }
 }
 
 function populateLeaderFilter(){
