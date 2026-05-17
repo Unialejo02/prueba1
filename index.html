@@ -7,13 +7,17 @@
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
-  --navy:#1B3A6B;--navy-d:#0f2244;--navy-l:#2a5298;
-  --gold:#E8A020;--gold-l:#f5c355;
+  --teal:#1a9696;--teal-d:#0d6666;--teal-l:#2ab8b8;
+  --dark:#2d3748;
+  --navy:#1a9696;--navy-d:#0d5555;--navy-l:#2a9d9d;
+  --gold:#2d3748;--gold-l:#4a5568;
   --green:#10b981;--red:#ef4444;--red-l:#fee2e2;
-  --white:#fff;--gray-50:#f8fafc;--gray-100:#f1f5f9;
-  --gray-200:#e2e8f0;--gray-400:#94a3b8;--gray-600:#475569;--gray-800:#1e293b;
+  --white:#fff;--gray-50:#f4f9f9;--gray-100:#e8f4f4;
+  --gray-200:#d1e8e8;--gray-400:#7aaeae;--gray-600:#3d7070;--gray-800:#1a3535;
+  --teal:#1a9696;--teal-d:#0d6666;--teal-l:#2ab8b8;
+  --dark:#2d3748;--dark-l:#4a5568;
   --font:'Sora',sans-serif;--mono:'DM Mono',monospace;
-  --r:12px;--shadow:0 4px 24px rgba(27,58,107,.10);--shadow-lg:0 8px 40px rgba(27,58,107,.18);
+  --r:12px;--shadow:0 4px 24px rgba(26,122,122,.12);--shadow-lg:0 8px 40px rgba(26,122,122,.22);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--font);background:var(--gray-50);color:var(--gray-800);min-height:100vh}
@@ -30,22 +34,26 @@ body{font-family:var(--font);background:var(--gray-50);color:var(--gray-800);min
   z-index:999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px}
 #loading p{font-size:13px;color:var(--gray-600)}
 .spinner{display:inline-block;width:32px;height:32px;border:3px solid rgba(27,58,107,.2);
-  border-top-color:var(--navy);border-radius:50%;animation:spin .6s linear infinite}
+  border-top-color:var(--teal);border-radius:50%;animation:spin .6s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* LOGIN */
-#loginScreen{min-height:100vh;background:linear-gradient(135deg,var(--navy-d),var(--navy),var(--navy-l));
+#loginScreen{min-height:100vh;background:linear-gradient(160deg,#e8f6f6 0%,#f4f9f9 50%,#e0f0f0 100%);
   display:flex;align-items:center;justify-content:center;padding:24px;position:relative;overflow:hidden}
 #loginScreen::before{content:'';position:absolute;inset:0;
-  background:radial-gradient(circle at 70% 20%,rgba(232,160,32,.15) 0%,transparent 60%)}
-.login-card{background:rgba(255,255,255,.97);border-radius:24px;padding:48px 40px;
-  width:100%;max-width:400px;box-shadow:var(--shadow-lg);position:relative;z-index:1}
+  background:radial-gradient(circle at 30% 80%,rgba(26,150,150,.08) 0%,transparent 60%),
+             radial-gradient(circle at 80% 20%,rgba(26,150,150,.06) 0%,transparent 50%)}
+.login-card{background:#fff;border-radius:24px;padding:48px 40px;
+  width:100%;max-width:400px;box-shadow:0 8px 48px rgba(26,122,122,.15);position:relative;z-index:1;
+  border:1px solid rgba(26,150,150,.1)}
 .login-logo{text-align:center;margin-bottom:32px}
-.login-shield{width:64px;height:64px;background:linear-gradient(135deg,var(--navy),var(--navy-l));
-  border-radius:16px;display:inline-flex;align-items:center;justify-content:center;
-  margin-bottom:16px;box-shadow:0 4px 16px rgba(27,58,107,.3)}
-.login-shield svg{width:32px;height:32px;fill:white}
-.login-logo h1{font-size:22px;font-weight:700;color:var(--navy);line-height:1.2}
+.login-shield{width:110px;height:110px;background:transparent;
+  border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
+  margin-bottom:8px}
+.login-shield svg{width:110px;height:110px}
+.login-logo h1{font-size:26px;font-weight:700;line-height:1.2;letter-spacing:-0.5px}
+.login-logo h1 .nova{color:#1a9696}
+.login-logo h1 .valle{color:#2d3748}
 .login-logo p{font-size:12px;color:var(--gray-400);margin-top:4px}
 .lbl{display:block;font-size:11px;font-weight:600;color:var(--gray-600);margin-bottom:6px;
   text-transform:uppercase;letter-spacing:.5px}
@@ -53,8 +61,8 @@ body{font-family:var(--font);background:var(--gray-50);color:var(--gray-800);min
 .login-form input{width:100%;padding:12px 16px;border:1.5px solid var(--gray-200);
   border-radius:var(--r);font-size:14px;font-family:var(--font);background:var(--gray-50);
   color:var(--gray-800);transition:border .2s,box-shadow .2s}
-.login-form input:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(27,58,107,.1);background:white}
-.btn-primary{width:100%;padding:13px;background:linear-gradient(135deg,var(--navy),var(--navy-l));
+.login-form input:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(26,150,150,.12);background:white}
+.btn-primary{width:100%;padding:13px;background:linear-gradient(135deg,var(--teal-d),var(--teal-l));
   color:white;border:none;border-radius:var(--r);font-size:14px;font-weight:600;
   font-family:var(--font);cursor:pointer;margin-top:4px;transition:opacity .2s}
 .btn-primary:hover{opacity:.92}
@@ -66,26 +74,26 @@ body{font-family:var(--font);background:var(--gray-50);color:var(--gray-800);min
 #app.active{display:flex}
 
 /* TOPBAR */
-.topbar{background:var(--navy-d);color:white;padding:0 20px;height:58px;
+.topbar{background:var(--teal-d);color:white;padding:0 20px;height:58px;
   display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;
   box-shadow:0 2px 12px rgba(0,0,0,.2)}
-.topbar-logo{width:32px;height:32px;background:var(--gold);border-radius:8px;
+.topbar-logo{width:32px;height:32px;background:rgba(255,255,255,.2);border-radius:8px;
   display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.topbar-logo svg{width:16px;height:16px;fill:var(--navy-d)}
+.topbar-logo svg{width:16px;height:16px;fill:white}
 .topbar-info{flex:1}
 .topbar-title{font-size:14px;font-weight:600}
 .topbar-sub{font-size:10px;color:rgba(255,255,255,.5)}
 .topbar-user{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);
   border-radius:99px;padding:6px 14px 6px 8px}
-.avatar{width:28px;height:28px;background:var(--gold);border-radius:50%;
-  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--navy-d)}
+.avatar{width:28px;height:28px;background:rgba(255,255,255,.25);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white}
 .topbar-user span{font-size:12px;font-weight:500}
 .btn-logout{background:rgba(255,255,255,.1);border:none;color:white;
   padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:var(--font)}
 .btn-logout:hover{background:rgba(255,255,255,.2)}
 
 /* NAV TABS (admin) */
-.nav-tabs{background:var(--navy);display:flex;padding:0 20px;gap:4px}
+.nav-tabs{background:var(--teal);display:flex;padding:0 20px;gap:4px}
 .nav-tab{padding:10px 18px;font-size:13px;font-weight:500;color:rgba(255,255,255,.6);
   cursor:pointer;border-bottom:2px solid transparent;transition:all .2s}
 .nav-tab.active{color:var(--gold);border-bottom-color:var(--gold)}
@@ -97,23 +105,23 @@ body{font-family:var(--font);background:var(--gray-50);color:var(--gray-800);min
 /* STATS */
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
 .stat-card{background:white;border-radius:var(--r);padding:16px;text-align:center;
-  box-shadow:var(--shadow);border-top:3px solid var(--navy)}
-.stat-card.gold{border-top-color:var(--gold)}
+  box-shadow:var(--shadow);border-top:3px solid var(--teal)}
+.stat-card.gold{border-top-color:var(--dark)}
 .stat-card.green{border-top-color:var(--green)}
-.stat-num{font-size:28px;font-weight:700;color:var(--navy);line-height:1}
-.stat-card.gold .stat-num{color:var(--gold)}
+.stat-num{font-size:28px;font-weight:700;color:var(--teal);line-height:1}
+.stat-card.gold .stat-num{color:var(--dark)}
 .stat-card.green .stat-num{color:var(--green)}
 .stat-label{font-size:11px;color:var(--gray-400);margin-top:4px;font-weight:500}
 
 /* SECTION HEADER */
 .section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-.section-head h2{font-size:16px;font-weight:600;color:var(--navy)}
+.section-head h2{font-size:16px;font-weight:600;color:var(--teal-d)}
 
 /* BUTTONS */
-.btn-add{background:var(--gold);color:var(--navy-d);border:none;border-radius:var(--r);
+.btn-add{background:var(--teal);color:white;border:none;border-radius:var(--r);
   padding:9px 18px;font-size:13px;font-weight:600;font-family:var(--font);cursor:pointer;
   display:flex;align-items:center;gap:6px;transition:background .2s}
-.btn-add:hover{background:var(--gold-l)}
+.btn-add:hover{background:var(--teal-l)}
 
 /* SEARCH */
 .search-wrap{position:relative;margin-bottom:10px}
@@ -121,13 +129,13 @@ body{font-family:var(--font);background:var(--gray-50);color:var(--gray-800);min
   width:16px;height:16px;fill:none;stroke:var(--gray-400);stroke-width:2}
 .search-bar{width:100%;padding:11px 16px 11px 40px;border:1.5px solid var(--gray-200);
   border-radius:var(--r);font-size:14px;font-family:var(--font);background:white;margin-bottom:0}
-.search-bar:focus{outline:none;border-color:var(--navy)}
+.search-bar:focus{outline:none;border-color:var(--teal)}
 
 /* FILTER TABS */
 .filter-tabs{display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding-bottom:2px}
 .filter-tab{padding:6px 14px;border-radius:99px;font-size:12px;font-weight:600;
   border:1.5px solid var(--gray-200);background:white;color:var(--gray-400);cursor:pointer;white-space:nowrap}
-.filter-tab.active{background:var(--navy);border-color:var(--navy);color:white}
+.filter-tab.active{background:var(--teal);border-color:var(--teal);color:white}
 
 /* CONTACT CARDS */
 .contacts-list{display:flex;flex-direction:column;gap:12px}
@@ -138,7 +146,7 @@ body{font-family:var(--font);background:var(--gray-50);color:var(--gray-800);min
 .contact-card.pending{border-left-color:var(--gold)}
 .contact-header{display:flex;align-items:center;gap:12px}
 .contact-avatar{width:42px;height:42px;border-radius:50%;
-  background:linear-gradient(135deg,var(--navy),var(--navy-l));
+  background:linear-gradient(135deg,var(--teal-d),var(--teal-l));
   display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:white;flex-shrink:0}
 .contact-info{flex:1;min-width:0}
 .contact-name{font-size:14px;font-weight:600;color:var(--gray-800)}
@@ -155,7 +163,7 @@ body{font-family:var(--font);background:var(--gray-50);color:var(--gray-800);min
   font-size:12px;font-weight:500;font-family:var(--font);cursor:pointer;
   background:white;color:var(--gray-600);transition:all .15s;
   display:flex;align-items:center;justify-content:center;gap:4px}
-.btn-sm:hover{border-color:var(--navy);color:var(--navy)}
+.btn-sm:hover{border-color:var(--teal);color:var(--teal)}
 .btn-sm.danger:hover{border-color:var(--red);color:var(--red)}
 .btn-sm.success{border-color:var(--green);color:var(--green);background:#f0fdf4}
 .cert-chip{background:var(--gray-100);border-radius:6px;padding:5px 10px;font-size:11px;
@@ -172,9 +180,9 @@ body{font-family:var(--font);background:var(--gray-50);color:var(--gray-800);min
   max-height:92vh;overflow-y:auto;padding:28px 24px 40px;animation:slideUp .25s ease}
 @media(min-width:600px){.modal{border-radius:24px;padding:32px}}
 @keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
-.modal-title{font-size:18px;font-weight:700;color:var(--navy);margin-bottom:20px;
+.modal-title{font-size:18px;font-weight:700;color:var(--teal-d);margin-bottom:20px;
   display:flex;align-items:center;gap:10px}
-.modal-title .dot{width:8px;height:8px;border-radius:50%;background:var(--gold)}
+.modal-title .dot{width:8px;height:8px;border-radius:50%;background:var(--teal)}
 .form-group{margin-bottom:16px}
 .form-group label{display:block;font-size:11px;font-weight:600;color:var(--gray-600);
   margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
@@ -184,7 +192,7 @@ body{font-family:var(--font);background:var(--gray-50);color:var(--gray-800);min
   transition:border .2s,box-shadow .2s;text-transform:uppercase}
 .form-group select{text-transform:none}
 .form-group input:focus,.form-group select:focus,.form-group textarea:focus{
-  outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(27,58,107,.1);background:white}
+  outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(26,150,150,.12);background:white}
 .form-group input.error{border-color:var(--red)}
 .field-hint{font-size:11px;color:var(--gray-400);margin-top:4px}
 .field-err{font-size:11px;color:var(--red);margin-top:4px;display:none}
@@ -193,7 +201,7 @@ body{font-family:var(--font);background:var(--gray-50);color:var(--gray-800);min
 .modal-actions{display:flex;gap:10px;margin-top:24px}
 .btn-cancel{flex:1;padding:12px;border:1.5px solid var(--gray-200);background:white;
   color:var(--gray-600);border-radius:var(--r);font-size:14px;font-weight:600;font-family:var(--font);cursor:pointer}
-.btn-save{flex:2;padding:12px;background:linear-gradient(135deg,var(--navy),var(--navy-l));
+.btn-save{flex:2;padding:12px;background:linear-gradient(135deg,var(--teal-d),var(--teal-l));
   color:white;border:none;border-radius:var(--r);font-size:14px;font-weight:600;font-family:var(--font);cursor:pointer}
 .btn-save:hover{opacity:.9}
 
@@ -214,7 +222,7 @@ body{font-family:var(--font);background:var(--gray-50);color:var(--gray-800);min
 .leader-cards{display:flex;flex-direction:column;gap:10px}
 .leader-card{background:white;border-radius:var(--r);padding:16px;box-shadow:var(--shadow);
   display:flex;align-items:center;gap:14px}
-.leader-av{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--navy),var(--navy-l));
+.leader-av{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--teal-d),var(--teal-l));
   display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:white;flex-shrink:0}
 .leader-info{flex:1}
 .leader-name{font-size:14px;font-weight:600;color:var(--gray-800)}
@@ -225,11 +233,11 @@ body{font-family:var(--font);background:var(--gray-50);color:var(--gray-800);min
 /* EMPTY */
 .empty{text-align:center;padding:48px 24px;background:white;border-radius:var(--r);box-shadow:var(--shadow)}
 .empty-icon{font-size:48px;margin-bottom:16px}
-.empty h3{font-size:16px;font-weight:600;color:var(--navy);margin-bottom:8px}
+.empty h3{font-size:16px;font-weight:600;color:var(--teal-d);margin-bottom:8px}
 .empty p{font-size:13px;color:var(--gray-400);line-height:1.6}
 
 /* ADMIN BADGE */
-.admin-badge{background:var(--gold);color:var(--navy-d);font-size:10px;font-weight:700;
+.admin-badge{background:var(--teal);color:white;font-size:10px;font-weight:700;
   padding:2px 8px;border-radius:99px;text-transform:uppercase;letter-spacing:.5px}
 
 /* ── MOBILE OPTIMIZADO ─────────────────────────────────────── */
@@ -331,9 +339,34 @@ body{font-family:var(--font);background:var(--gray-50);color:var(--gray-800);min
   <div class="login-card">
     <div class="login-logo">
       <div class="login-shield">
-        <svg viewBox="0 0 24 24"><path d="M12 2L4 6v6c0 5.25 3.5 10.15 8 11.35C16.5 22.15 20 17.25 20 12V6L12 2z"/></svg>
+        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+          <!-- Radar circles -->
+          <circle cx="60" cy="60" r="55" fill="none" stroke="#d1e8e8" stroke-width="1" stroke-dasharray="3,3"/>
+          <circle cx="60" cy="60" r="42" fill="none" stroke="#d1e8e8" stroke-width="1" stroke-dasharray="3,3"/>
+          <circle cx="60" cy="60" r="28" fill="none" stroke="#d1e8e8" stroke-width="1" stroke-dasharray="3,3"/>
+          <!-- Crosshair lines -->
+          <line x1="60" y1="4" x2="60" y2="20" stroke="#b0d4d4" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="60" y1="100" x2="60" y2="116" stroke="#b0d4d4" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="4" y1="60" x2="20" y2="60" stroke="#b0d4d4" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="100" y1="60" x2="116" y2="60" stroke="#b0d4d4" stroke-width="1.5" stroke-linecap="round"/>
+          <!-- Arrow tips -->
+          <polygon points="60,2 57,10 63,10" fill="#1a9696"/>
+          <polygon points="60,118 57,110 63,110" fill="#1a9696"/>
+          <polygon points="2,60 10,57 10,63" fill="#1a9696"/>
+          <polygon points="118,60 110,57 110,63" fill="#1a9696"/>
+          <!-- Valle del Cauca map shape (simplified) -->
+          <path d="M52,25 C50,24 47,25 45,27 C43,29 42,32 40,34 C38,36 35,37 34,40
+                   C33,43 34,46 33,49 C32,52 30,54 30,57 C30,60 32,62 33,65
+                   C34,68 34,71 36,73 C38,75 41,75 43,77 C45,79 46,82 48,84
+                   C50,86 53,87 55,89 C57,91 58,94 60,95 C62,94 64,91 66,89
+                   C68,87 71,87 73,85 C75,83 75,80 77,78 C79,76 82,75 83,72
+                   C84,69 83,66 84,63 C85,60 87,58 87,55 C87,52 85,50 84,47
+                   C83,44 83,41 81,39 C79,37 76,37 74,35 C72,33 71,30 69,28
+                   C67,26 64,25 62,24 C60,23 57,23 55,23 Z"
+                fill="#1a9696" opacity="0.9"/>
+        </svg>
       </div>
-      <h1>NOVVA VALLE</h1>
+      <h1><span class="nova">NOVA</span><span class="valle">VALLE</span></h1>
       <p>Sistema de Gestión Electoral · 2026</p>
     </div>
     <div class="login-form">
@@ -368,7 +401,15 @@ body{font-family:var(--font);background:var(--gray-50);color:var(--gray-800);min
 <div id="app">
   <div class="topbar">
     <div class="topbar-logo">
-      <svg viewBox="0 0 24 24"><path d="M12 2L4 6v6c0 5.25 3.5 10.15 8 11.35C16.5 22.15 20 17.25 20 12V6L12 2z"/></svg>
+      <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" stroke-dasharray="3,3"/>
+        <circle cx="60" cy="60" r="36" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="60" y1="6" x2="60" y2="18" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round"/>
+        <line x1="60" y1="102" x2="60" y2="114" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round"/>
+        <line x1="6" y1="60" x2="18" y2="60" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round"/>
+        <line x1="102" y1="60" x2="114" y2="60" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round"/>
+        <path d="M52,25 C50,24 47,25 45,27 C43,29 42,32 40,34 C38,36 35,37 34,40 C33,43 34,46 33,49 C32,52 30,54 30,57 C30,60 32,62 33,65 C34,68 34,71 36,73 C38,75 41,75 43,77 C45,79 46,82 48,84 C50,86 53,87 55,89 C57,91 58,94 60,95 C62,94 64,91 66,89 C68,87 71,87 73,85 C75,83 75,80 77,78 C79,76 82,75 83,72 C84,69 83,66 84,63 C85,60 87,58 87,55 C87,52 85,50 84,47 C83,44 83,41 81,39 C79,37 76,37 74,35 C72,33 71,30 69,28 C67,26 64,25 62,24 C60,23 57,23 55,23 Z" fill="white" opacity="0.9"/>
+      </svg>
     </div>
     <div class="topbar-info">
       <div class="topbar-title">NOVVA VALLE · Electoral</div>
@@ -383,8 +424,9 @@ body{font-family:var(--font);background:var(--gray-50);color:var(--gray-800);min
 
   <!-- Admin nav tabs -->
   <div class="nav-tabs hidden" id="adminTabs">
-    <div class="nav-tab active" onclick="showAdminTab('contacts',this)">📋 Todos los registros</div>
-    <div class="nav-tab" onclick="showAdminTab('leaders',this)">👥 Líderes</div>
+    <div class="nav-tab active" onclick="showAdminTab('contacts',this)">📋 Registros</div>
+    <div class="nav-tab" onclick="showAdminTab('leaders',this)">👥 Credenciales</div>
+    <div class="nav-tab" onclick="showAdminTab('staff',this)">⭐ Staff</div>
   </div>
 
   <div class="main">
@@ -399,7 +441,7 @@ body{font-family:var(--font);background:var(--gray-50);color:var(--gray-800);min
 
       <div class="section-head">
         <h2 id="contactsTitle">Mis contactos</h2>
-        <button class="btn-add" onclick="openContactModal()">
+        <button class="btn-add hidden" id="btnAgregarContacto" onclick="openContactModal()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14M5 12h14"/></svg>
           Agregar
         </button>
@@ -408,6 +450,15 @@ body{font-family:var(--font);background:var(--gray-50);color:var(--gray-800);min
       <div class="search-wrap">
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
         <input class="search-bar" id="searchInput" placeholder="Buscar por nombre o cédula..." oninput="renderContacts()">
+      </div>
+
+      <!-- Filtro por líder (solo admin) -->
+      <div id="leaderFilterWrap" class="hidden" style="margin-bottom:12px">
+        <select id="leaderFilter" onchange="renderContacts()"
+          style="width:100%;padding:9px 14px;border:1.5px solid var(--gray-200);border-radius:var(--r);
+          font-size:13px;font-family:var(--font);color:var(--gray-800);background:white;cursor:pointer">
+          <option value="">👥 Todos los líderes</option>
+        </select>
       </div>
 
       <div class="filter-tabs">
@@ -420,22 +471,38 @@ body{font-family:var(--font);background:var(--gray-50);color:var(--gray-800);min
       <div class="contacts-list" id="contactsList"></div>
     </div>
 
-    <!-- ── PANEL LÍDERES (solo admin) ──────────────────── -->
+    <!-- ── PANEL CREDENCIALES (solo admin) ──────────────────── -->
     <div id="panelLeaders" class="hidden">
       <div class="section-head">
-        <h2>Gestión de líderes</h2>
+        <h2>Credenciales</h2>
         <button class="btn-add" onclick="openLeaderModal()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14M5 12h14"/></svg>
-          Nuevo líder
+          Nueva credencial
         </button>
       </div>
       <div id="migrateWrap" style="margin-bottom:12px">
-        <button class="btn-add" style="background:var(--navy);color:white;width:100%;justify-content:center"
+        <button class="btn-add" style="background:var(--teal-d);color:white;width:100%;justify-content:center"
           onclick="migrateLeadersToSheet()">
-          ☁️ Sincronizar líderes al servidor
+          ☁️ Sincronizar al servidor
         </button>
       </div>
       <div class="leader-cards" id="leaderList"></div>
+    </div>
+
+    <!-- ── PANEL STAFF (solo admin) ──────────────────── -->
+    <div id="panelStaff" class="hidden">
+      <div class="section-head">
+        <h2>Vista Staff</h2>
+      </div>
+      <!-- Selector de staff -->
+      <div style="margin-bottom:16px">
+        <select id="staffSelector" onchange="renderStaffView()"
+          style="width:100%;padding:10px 14px;border:1.5px solid var(--gray-200);border-radius:var(--r);
+          font-size:13px;font-family:var(--font);color:var(--gray-800);background:white">
+          <option value="">— Selecciona un miembro Staff —</option>
+        </select>
+      </div>
+      <div id="staffViewContent"></div>
     </div>
 
   </div>
@@ -544,9 +611,25 @@ body{font-family:var(--font);background:var(--gray-50);color:var(--gray-800);min
       <input id="lZona" placeholder="Ej. Comuna 5 - Norte" oninput="toUpper(this)">
     </div>
 
+    <div class="form-group">
+      <label>Tipo de credencial <span style="color:var(--red)">*</span></label>
+      <select id="lTipo" onchange="onTipoChange()" style="text-transform:none">
+        <option value="leader">Líder</option>
+        <option value="staff">Staff</option>
+      </select>
+    </div>
+
+    <div class="form-group hidden" id="staffAsignadoWrap">
+      <label>Staff asignado (encargado)</label>
+      <select id="lStaffAsignado" style="text-transform:none">
+        <option value="">— Sin staff asignado —</option>
+      </select>
+      <div class="field-hint">El staff podrá ver los registros de este líder</div>
+    </div>
+
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal('leaderModal')">Cancelar</button>
-      <button class="btn-save" onclick="saveLeader()">Guardar líder</button>
+      <button class="btn-save" onclick="saveLeader()">Guardar</button>
     </div>
   </div>
 </div>
@@ -677,12 +760,19 @@ function startApp(){
   if(isAdmin){
     document.getElementById('topSub').textContent = 'Administrador · NOVVA VALLE';
     document.getElementById('contactsTitle').textContent = 'Todos los registros';
+    document.getElementById('btnAgregarContacto').classList.add('hidden');
+    document.getElementById('leaderFilterWrap').classList.remove('hidden');
     loadLeaders();
+  } else if(currentUser.role==='staff'){
+    document.getElementById('topSub').textContent = 'Staff · NOVVA VALLE';
+    document.getElementById('contactsTitle').textContent = 'Mis registros';
+    document.getElementById('btnAgregarContacto').classList.remove('hidden');
+    document.getElementById('leaderFilterWrap').classList.add('hidden');
   } else {
     document.getElementById('topSub').textContent = currentUser.zona ? 'Zona: '+currentUser.zona : 'Líder';
     document.getElementById('contactsTitle').textContent = 'Mis contactos';
-    // Asegurarse que líder no pueda acceder al panel de líderes
-    document.getElementById('panelLeaders').remove && null;
+    document.getElementById('btnAgregarContacto').classList.remove('hidden');
+    document.getElementById('leaderFilterWrap').classList.add('hidden');
   }
 
   loadContacts();
@@ -707,20 +797,89 @@ function saveLeaders(){
   localStorage.setItem(leadersKey(), JSON.stringify(leaders));
 }
 
+function onTipoChange(){
+  const tipo = document.getElementById('lTipo').value;
+  const wrap = document.getElementById('staffAsignadoWrap');
+  wrap.classList.toggle('hidden', tipo !== 'leader');
+  if(tipo==='leader'){
+    const staffList = leaders.filter(l=>l.tipo==='staff');
+    const sel = document.getElementById('lStaffAsignado');
+    sel.innerHTML = '<option value="">— Sin staff asignado —</option>' +
+      staffList.map(l=>`<option value="${l.id}">${escHtml(l.nombre)}</option>`).join('');
+  }
+}
+
+function renderStaffSelector(){
+  const staffList = leaders.filter(l=>l.tipo==='staff');
+  const ss = document.getElementById('staffSelector');
+  if(!ss) return;
+  ss.innerHTML = '<option value="">— Selecciona un miembro Staff —</option>' +
+    staffList.map(l=>`<option value="${l.id}">${escHtml(l.nombre)}</option>`).join('');
+  document.getElementById('staffViewContent').innerHTML = '';
+}
+
+function renderStaffView(){
+  const staffId = document.getElementById('staffSelector').value;
+  const el = document.getElementById('staffViewContent');
+  if(!staffId){ el.innerHTML='<div class="empty"><div class="empty-icon">⭐</div><h3>Selecciona un miembro del Staff</h3></div>'; return; }
+  const staffMember = leaders.find(l=>l.id===staffId);
+  if(!staffMember){ el.innerHTML=''; return; }
+  // Leaders assigned to this staff
+  const myLeaders = leaders.filter(l=>l.staffAsignado===staffId && l.tipo!=='staff');
+  if(!myLeaders.length){
+    el.innerHTML=`<div class="empty"><div class="empty-icon">👥</div><h3>Sin líderes asignados</h3><p>Asigna líderes a ${escHtml(staffMember.nombre)} desde Credenciales.</p></div>`;
+    return;
+  }
+  el.innerHTML = myLeaders.map(l=>{
+    const lc    = contacts.filter(c=>c.lider===l.id);
+    const voted = lc.filter(c=>c.estado==='voted').length;
+    const cert  = lc.filter(c=>c.cert).length;
+    const ini   = l.nombre.charAt(0).toUpperCase();
+    return `<div class="leader-card" style="margin-bottom:10px;flex-direction:column;align-items:flex-start">
+      <div style="display:flex;align-items:center;gap:12px;width:100%">
+        <div class="leader-av">${ini}</div>
+        <div class="leader-info">
+          <div class="leader-name">${escHtml(l.nombre)}</div>
+          <div class="leader-user">@${escHtml(l.user)} ${l.zona?'· '+escHtml(l.zona):''}</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;margin-top:10px">
+        <div style="text-align:center;background:var(--gray-50);border-radius:8px;padding:8px;border-top:2px solid var(--teal)">
+          <div style="font-size:20px;font-weight:700;color:var(--teal)">${lc.length}</div>
+          <div style="font-size:10px;color:var(--gray-400)">Registros</div>
+        </div>
+        <div style="text-align:center;background:var(--gray-50);border-radius:8px;padding:8px;border-top:2px solid var(--dark)">
+          <div style="font-size:20px;font-weight:700;color:var(--dark)">${cert}</div>
+          <div style="font-size:10px;color:var(--gray-400)">Con cert.</div>
+        </div>
+        <div style="text-align:center;background:var(--gray-50);border-radius:8px;padding:8px;border-top:2px solid var(--green)">
+          <div style="font-size:20px;font-weight:700;color:var(--green)">${voted}</div>
+          <div style="font-size:10px;color:var(--gray-400)">Confirmados</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
 function openLeaderModal(id=null){
   editLeaderId = id;
   document.getElementById('errLUser').classList.remove('show');
   if(id){
     const l = leaders.find(x=>x.id===id);
     if(!l) return;
-    document.getElementById('leaderModalTitle').textContent = 'Editar líder';
+    document.getElementById('leaderModalTitle').textContent = 'Editar credencial';
     document.getElementById('lNombre').value = l.nombre;
     document.getElementById('lUser').value   = l.user;
     document.getElementById('lPass').value   = l.pass;
     document.getElementById('lZona').value   = l.zona||'';
+    document.getElementById('lTipo').value   = l.tipo||'leader';
+    onTipoChange();
+    if(l.staffAsignado) document.getElementById('lStaffAsignado').value = l.staffAsignado;
   } else {
-    document.getElementById('leaderModalTitle').textContent = 'Nuevo líder';
+    document.getElementById('leaderModalTitle').textContent = 'Nueva credencial';
     ['lNombre','lUser','lPass','lZona'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('lTipo').value = 'leader';
+    onTipoChange();
   }
   document.getElementById('leaderModal').classList.remove('hidden');
 }
@@ -741,10 +900,15 @@ function saveLeader(){
   }
   document.getElementById('errLUser').classList.remove('show');
 
+  const tipo         = document.getElementById('lTipo').value || 'leader';
+  const staffAsignado = tipo==='leader' ? (document.getElementById('lStaffAsignado').value||'') : '';
+
   const leader = {
     id:     editLeaderId || 'L'+Date.now(),
     nombre, user, pass, zona,
-    role:   'leader',
+    tipo,
+    staffAsignado,
+    role:   tipo==='staff' ? 'staff' : 'leader',
     fecha:  new Date().toLocaleDateString('es-CO')
   };
 
@@ -811,16 +975,42 @@ function renderLeaders(){
     el.innerHTML=`<div class="empty"><div class="empty-icon">👥</div><h3>Sin líderes</h3><p>Agrega tu primer líder tocando <strong>Nuevo líder</strong>.</p></div>`;
     return;
   }
+  // Populate leader filter dropdown
+  const lf = document.getElementById('leaderFilter');
+  if(lf){
+    const prev = lf.value;
+    lf.innerHTML = '<option value="">👥 Todos los líderes</option>' +
+      leaders.map(l=>`<option value="${l.id}">${escHtml(l.nombre)} ${l.tipo==='staff'?'⭐':''}</option>`).join('');
+    lf.value = prev;
+  }
+
+  // Populate staff selector in staff view
+  const ss = document.getElementById('staffSelector');
+  if(ss){
+    const staffList = leaders.filter(l=>l.tipo==='staff');
+    ss.innerHTML = '<option value="">— Selecciona un miembro Staff —</option>' +
+      staffList.map(l=>`<option value="${l.id}">${escHtml(l.nombre)}</option>`).join('');
+  }
+
   el.innerHTML = leaders.map(l=>{
-    const lContacts = JSON.parse(localStorage.getItem(lKey(l.id))||'[]');
-    const voted     = lContacts.filter(c=>c.estado==='voted').length;
-    const ini       = l.nombre.charAt(0).toUpperCase();
+    const lContacts = contacts.filter(c=>c.lider===l.id);
+    const voted = lContacts.filter(c=>c.estado==='voted').length;
+    const cert  = lContacts.filter(c=>c.cert).length;
+    const ini   = l.nombre.charAt(0).toUpperCase();
+    const tipoBadge = l.tipo==='staff'
+      ? `<span style="background:#e8f4f4;color:var(--teal-d);font-size:9px;font-weight:700;padding:2px 8px;border-radius:99px;text-transform:uppercase">⭐ Staff</span>`
+      : `<span style="background:#f0fdf4;color:#065f46;font-size:9px;font-weight:700;padding:2px 8px;border-radius:99px;text-transform:uppercase">👤 Líder</span>`;
+    const staffInfo = l.staffAsignado ? (() => {
+      const s = leaders.find(x=>x.id===l.staffAsignado);
+      return s ? `<div style="font-size:10px;color:var(--gray-400);margin-top:2px">⭐ ${escHtml(s.nombre)}</div>` : '';
+    })() : '';
     return `<div class="leader-card">
       <div class="leader-av">${ini}</div>
       <div class="leader-info">
-        <div class="leader-name">${escHtml(l.nombre)}</div>
+        <div style="display:flex;align-items:center;gap:6px">${tipoBadge}<span class="leader-name">${escHtml(l.nombre)}</span></div>
         <div class="leader-user">@${escHtml(l.user)} ${l.zona?'· '+escHtml(l.zona):''}</div>
-        <div class="leader-stats">📋 ${lContacts.length} contactos · ✓ ${voted} confirmados</div>
+        ${staffInfo}
+        <div class="leader-stats">📋 ${lContacts.length} registros · ✓ ${voted} confirmados · 📄 ${cert} cert.</div>
       </div>
       <div class="leader-actions">
         <button class="btn-sm" onclick="openLeaderModal('${l.id}')">✏️</button>
@@ -837,14 +1027,18 @@ function showAdminTab(tab, el){
   adminTab = tab;
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
+  document.getElementById('panelContacts').classList.add('hidden');
+  document.getElementById('panelLeaders').classList.add('hidden');
+  document.getElementById('panelStaff').classList.add('hidden');
   if(tab==='contacts'){
     document.getElementById('panelContacts').classList.remove('hidden');
-    document.getElementById('panelLeaders').classList.add('hidden');
     renderContacts(); updateStats();
-  } else {
-    document.getElementById('panelContacts').classList.add('hidden');
+  } else if(tab==='leaders'){
     document.getElementById('panelLeaders').classList.remove('hidden');
     renderLeaders();
+  } else if(tab==='staff'){
+    document.getElementById('panelStaff').classList.remove('hidden');
+    renderStaffSelector();
   }
 }
 
@@ -1154,7 +1348,17 @@ function setFilter(f, el){
 
 function renderContacts(){
   const q = (document.getElementById('searchInput').value||'').toLowerCase();
-  let list = currentUser.role==='admin' ? [...contacts] : contacts.filter(c=>c.lider===currentUser.id);
+  const liderFiltro = currentUser.role==='admin' ? (document.getElementById('leaderFilter')?document.getElementById('leaderFilter').value:'') : '';
+  let list;
+  if(currentUser.role==='admin'){
+    list = [...contacts];
+    if(liderFiltro) list = list.filter(c=>c.lider===liderFiltro);
+  } else if(currentUser.role==='staff'){
+    // Staff ve sus propios contactos
+    list = contacts.filter(c=>c.lider===currentUser.id);
+  } else {
+    list = contacts.filter(c=>c.lider===currentUser.id);
+  }
 
   if(q) list = list.filter(c=>`${c.nombres} ${c.apellidos}`.toLowerCase().includes(q) || String(c.doc).includes(q));
   if(activeFilter==='voted')   list = list.filter(c=>c.estado==='voted');
