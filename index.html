@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>UNISCA · Sistema Electoral</title>
+<title>NOVVA VALLE · Sistema Electoral</title>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -250,7 +250,7 @@ body{font-family:var(--font);background:var(--gray-50);color:var(--gray-800);min
       <div class="login-shield">
         <svg viewBox="0 0 24 24"><path d="M12 2L4 6v6c0 5.25 3.5 10.15 8 11.35C16.5 22.15 20 17.25 20 12V6L12 2z"/></svg>
       </div>
-      <h1>UNISCA</h1>
+      <h1>NOVVA VALLE</h1>
       <p>Sistema de Gestión Electoral · 2026</p>
     </div>
     <div class="login-form">
@@ -265,7 +265,7 @@ body{font-family:var(--font);background:var(--gray-50);color:var(--gray-800);min
       <div class="login-err" id="loginErr"></div>
       <button class="btn-primary" onclick="doLogin()">Ingresar al sistema</button>
     </div>
-    <p class="login-note">Acceso exclusivo · UNISCA 2026</p>
+    <p class="login-note">Acceso exclusivo · NOVVA VALLE 2026</p>
   </div>
 </div>
 
@@ -276,7 +276,7 @@ body{font-family:var(--font);background:var(--gray-50);color:var(--gray-800);min
       <svg viewBox="0 0 24 24"><path d="M12 2L4 6v6c0 5.25 3.5 10.15 8 11.35C16.5 22.15 20 17.25 20 12V6L12 2z"/></svg>
     </div>
     <div class="topbar-info">
-      <div class="topbar-title">UNISCA · Electoral</div>
+      <div class="topbar-title">NOVVA VALLE · Electoral</div>
       <div class="topbar-sub" id="topSub">Sistema de gestión</div>
     </div>
     <div class="topbar-user">
@@ -458,7 +458,7 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbxT9BFhKPmTJfRxuaXyhKaw
 const gasReady = GAS_URL !== 'TU_URL_AQUI';
 
 // Admin credentials
-const ADMIN = { user: 'UNISCA2026', pass: 'Colombia20206@', nombre: 'UNISCA Admin', id: 'ADMIN', role: 'admin' };
+const ADMIN = { user: 'Novvavalle2026', pass: 'Cali2026*', nombre: 'NOVVA VALLE Admin', id: 'ADMIN', role: 'admin' };
 
 // ══════════════════════════════════════════════════════════════════
 //  ESTADO GLOBAL
@@ -537,7 +537,7 @@ function startApp(){
   document.getElementById('panelContacts').classList.remove('hidden');
 
   if(isAdmin){
-    document.getElementById('topSub').textContent = 'Administrador · UNISCA';
+    document.getElementById('topSub').textContent = 'Administrador · NOVVA VALLE';
     document.getElementById('contactsTitle').textContent = 'Todos los registros';
     loadLeaders();
   } else {
