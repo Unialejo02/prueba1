@@ -718,7 +718,7 @@ function doLogin(){
   loadLeaders();
   const local = leaders.find(l => l.user.toLowerCase() === user.toLowerCase() && l.pass === pass);
   if(local){
-    currentUser = {...local, role:'leader'};
+    currentUser = {...local, role: local.tipo==='staff' ? 'staff' : 'leader'};
     sessionStorage.setItem('usc_session', JSON.stringify(currentUser));
     startApp(); return;
   }
@@ -737,7 +737,7 @@ function doLogin(){
         leaders = data.leaders;
         const found = data.leaders.find(l => l.user.toLowerCase() === user.toLowerCase() && l.pass === pass);
         if(found){
-          currentUser = {...found, role:'leader'};
+          currentUser = {...found, role: found.tipo==='staff' ? 'staff' : 'leader'};
           sessionStorage.setItem('usc_session', JSON.stringify(currentUser));
           startApp(); return;
         }
