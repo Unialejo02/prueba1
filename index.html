@@ -603,27 +603,6 @@ function togglePass(){
 }
 
 // Líderes registrados — se actualiza automáticamente al crear/editar desde admin
-const LEADERS_BACKUP = [
-  {"id":"L1778595593118","nombre":"DIANA GUANGA","user":"diana.guanga","pass":"Cali2026@","zona":"","role":"leader","fecha":"17/5/2026"},
-  {"id":"L1778595751976","nombre":"ALEJANDRO UNI","user":"alejandro.uni","pass":"Cali2026@","zona":"POBLADO 2","role":"leader","fecha":"12/5/2026"},
-  {"id":"L1779039743318","nombre":"ALEJANDRA UNI","user":"alejandra.uni","pass":"Cali2026*","zona":"VALLE DEL LILI","role":"leader","fecha":"17/5/2026"}
-];
-
-function findLeader(user, pass){
-  // 1. Check localStorage
-  loadLeaders();
-  let found = leaders.find(l => l.user.toLowerCase() === user.toLowerCase() && l.pass === pass);
-  if(found) return found;
-  // 2. Check hardcoded backup (works on any device without localStorage)
-  found = LEADERS_BACKUP.find(l => l.user.toLowerCase() === user.toLowerCase() && l.pass === pass);
-  if(found){
-    // Merge into localStorage for future use
-    if(!leaders.find(l=>l.id===found.id)) leaders.push(found);
-    saveLeaders();
-  }
-  return found || null;
-}
-
 function doLogin(){
   const user = document.getElementById('loginUser').value.trim();
   const pass = document.getElementById('loginPass').value;
@@ -639,15 +618,40 @@ function doLogin(){
     startApp(); return;
   }
 
-  // Check leaders (local + backup)
-  const leader = findLeader(user, pass);
-  if(leader){
-    currentUser = {...leader, role:'leader'};
+  // Check localStorage first (fast)
+  loadLeaders();
+  const local = leaders.find(l => l.user.toLowerCase() === user.toLowerCase() && l.pass === pass);
+  if(local){
+    currentUser = {...local, role:'leader'};
     sessionStorage.setItem('usc_session', JSON.stringify(currentUser));
     startApp(); return;
   }
 
-  err.textContent = 'Usuario o contraseña incorrectos';
+  // Always check sheet (covers new leaders and other devices)
+  err.textContent = 'Verificando...';
+  const ctrl = new AbortController();
+  const t = setTimeout(()=>ctrl.abort(), 10000);
+  fetch(`${GAS_URL}?action=getLeaders`, {signal:ctrl.signal})
+    .then(r=>r.json())
+    .then(data=>{
+      clearTimeout(t);
+      if(data.leaders && data.leaders.length){
+        // Update local cache
+        localStorage.setItem(leadersKey(), JSON.stringify(data.leaders));
+        leaders = data.leaders;
+        const found = data.leaders.find(l => l.user.toLowerCase() === user.toLowerCase() && l.pass === pass);
+        if(found){
+          currentUser = {...found, role:'leader'};
+          sessionStorage.setItem('usc_session', JSON.stringify(currentUser));
+          startApp(); return;
+        }
+      }
+      err.textContent = 'Usuario o contraseña incorrectos';
+    })
+    .catch(()=>{
+      clearTimeout(t);
+      err.textContent = 'Sin conexión al servidor. Verifica tu internet.';
+    });
 }
 
 function doLogout(){
@@ -752,14 +756,21 @@ function saveLeader(){
   }
 
   saveLeaders();
-  // Sync to sheet so other devices can login
-  if(gasReady){
-    const payload = encodeURIComponent(JSON.stringify({ action:'saveLeader', leader }));
-    fetch(`${GAS_URL}?data=${payload}`).catch(()=>{});
-  }
   closeModal('leaderModal');
   renderLeaders();
   toast(editLeaderId ? 'Líder actualizado ✓' : 'Líder creado ✓');
+
+  // Sync to sheet — required so any device can login
+  if(gasReady){
+    const payload = encodeURIComponent(JSON.stringify({ action:'saveLeader', leader }));
+    fetch(`${GAS_URL}?data=${payload}`)
+      .then(r=>r.json())
+      .then(d=>{
+        if(d.ok) toast('✓ Líder sincronizado — ya puede entrar desde cualquier celular', 3500);
+        else toast('⚠️ Líder guardado localmente pero NO sincronizado. Usa el botón Sincronizar.', 5000);
+      })
+      .catch(()=>{ toast('⚠️ Sin conexión. Usa el botón Sincronizar antes de que el líder intente entrar.', 5000); });
+  }
 }
 
 function migrateLeadersToSheet(){
