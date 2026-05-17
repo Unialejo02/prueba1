@@ -800,19 +800,22 @@ function saveContact(){
     if(prev) cert = prev.cert || null;
   }
 
+  // Preserve original fecha and lider when editing
+  const prevContact = editContactId ? contacts.find(c=>c.id===editContactId) : null;
+
   const contact = {
-    id:        editContactId || 'C'+Date.now(),
-    lider:     currentUser.id,
-    liderNombre: currentUser.nombre,
+    id:          editContactId || 'C'+Date.now(),
+    lider:       (prevContact && prevContact.lider) || currentUser.id,
+    liderNombre: (prevContact && prevContact.liderNombre) || currentUser.nombre,
     nombres, apellidos,
-    tipoDoc:   document.getElementById('fTipoDoc').value,
+    tipoDoc:     document.getElementById('fTipoDoc').value,
     doc, celular,
-    municipio: document.getElementById('fMunicipio').value.trim().toUpperCase(),
-    barrio:    document.getElementById('fBarrio').value.trim().toUpperCase(),
-    puesto:    document.getElementById('fPuesto').value.trim().toUpperCase(),
-    estado:    document.getElementById('fEstado').value,
+    municipio:   document.getElementById('fMunicipio').value.trim().toUpperCase(),
+    barrio:      document.getElementById('fBarrio').value.trim().toUpperCase(),
+    puesto:      document.getElementById('fPuesto').value.trim().toUpperCase(),
+    estado:      document.getElementById('fEstado').value,
     cert,
-    fecha:     new Date().toLocaleDateString('es-CO'),
+    fecha:       (prevContact && prevContact.fecha) || new Date().toLocaleDateString('es-CO'),
   };
 
   // Save locally
@@ -839,24 +842,39 @@ function saveContact(){
 
 function syncContactToSheet(contact){
   if(!gasReady) return;
-  const payload = { action:'save', lider:contact.lider, liderNombre:contact.liderNombre, contact };
-  // Use POST so the base64 cert doesn't overflow URL length limits
-  fetch(GAS_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain' },
-    body: JSON.stringify(payload)
-  })
+
+  // Separate cert base64 to avoid URL length limits on GET
+  const certBase64 = contact.cert && contact.cert.base64 ? contact.cert.base64 : null;
+  const contactSafe = Object.assign({}, contact, {
+    cert: contact.cert ? { name: contact.cert.name, size: contact.cert.size, url: contact.cert.url||'' } : null
+  });
+
+  // Step 1: send contact data (no base64) via GET
+  const payload = { action:'save', lider:contact.lider, liderNombre:contact.liderNombre, contact: contactSafe };
+  const encoded = encodeURIComponent(JSON.stringify(payload));
+  fetch(`${GAS_URL}?data=${encoded}`)
     .then(r=>r.json())
-    .then(d=>{ if(d.ok) toast('Sincronizado ✓',1800); })
-    .catch(()=>{
-      // Fallback: GET without cert base64 (metadata only)
-      const safe = Object.assign({}, payload);
-      if(safe.contact && safe.contact.cert && safe.contact.cert.base64){
-        safe.contact = Object.assign({}, safe.contact, { cert: { name: safe.contact.cert.name, size: safe.contact.cert.size, url: safe.contact.cert.url||'' } });
+    .then(d=>{
+      if(!d.ok) return;
+      // Step 2: if new cert, send base64 separately via POST
+      if(certBase64){
+        const certPayload = JSON.stringify({
+          action: 'saveCert',
+          contactId: contact.id,
+          lider: contact.lider,
+          liderNombre: contact.liderNombre,
+          contactNombre: (contact.nombres||'') + '_' + (contact.apellidos||''),
+          cert: { name: contact.cert.name, size: contact.cert.size, base64: certBase64 }
+        });
+        fetch(GAS_URL, { method:'POST', body: certPayload })
+          .then(r=>r.json())
+          .then(d2=>{ if(d2.ok) toast('Sincronizado con archivo ✓', 2200); })
+          .catch(()=>{ toast('Datos guardados, archivo pendiente', 2200); });
+      } else {
+        toast('Sincronizado ✓', 1800);
       }
-      const encoded = encodeURIComponent(JSON.stringify(safe));
-      fetch(`${GAS_URL}?data=${encoded}`).catch(()=>{});
-    });
+    })
+    .catch(()=>{});
 }
 
 function deleteContact(id){
