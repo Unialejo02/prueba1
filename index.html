@@ -528,7 +528,7 @@ function doLogin(){
     startApp(); return;
   }
 
-  // Check leaders
+  // Check leaders locally first
   loadLeaders();
   const leader = leaders.find(l => l.user.toLowerCase() === user.toLowerCase() && l.pass === pass);
   if(leader){
@@ -537,7 +537,29 @@ function doLogin(){
     startApp(); return;
   }
 
-  err.textContent = 'Usuario o contraseña incorrectos';
+  // Not found locally — check sheet (for other devices)
+  if(gasReady){
+    err.textContent = 'Verificando...';
+    fetch(`${GAS_URL}?action=getLeaders`)
+      .then(r=>r.json())
+      .then(data=>{
+        if(data.leaders){
+          // Save to local for future use
+          localStorage.setItem(leadersKey(), JSON.stringify(data.leaders));
+          leaders = data.leaders;
+          const found = data.leaders.find(l => l.user.toLowerCase() === user.toLowerCase() && l.pass === pass);
+          if(found){
+            currentUser = {...found, role:'leader'};
+            sessionStorage.setItem('usc_session', JSON.stringify(currentUser));
+            startApp(); return;
+          }
+        }
+        err.textContent = 'Usuario o contraseña incorrectos';
+      })
+      .catch(()=>{ err.textContent = 'Usuario o contraseña incorrectos'; });
+  } else {
+    err.textContent = 'Usuario o contraseña incorrectos';
+  }
 }
 
 function doLogout(){
@@ -642,6 +664,11 @@ function saveLeader(){
   }
 
   saveLeaders();
+  // Sync to sheet so other devices can login
+  if(gasReady){
+    const payload = encodeURIComponent(JSON.stringify({ action:'saveLeader', leader }));
+    fetch(`${GAS_URL}?data=${payload}`).catch(()=>{});
+  }
   closeModal('leaderModal');
   renderLeaders();
   toast(editLeaderId ? 'Líder actualizado ✓' : 'Líder creado ✓');
@@ -651,8 +678,11 @@ function deleteLeader(id){
   if(!confirm('¿Eliminar este líder? Se eliminarán también sus contactos.')) return;
   leaders = leaders.filter(l=>l.id!==id);
   saveLeaders();
-  // Remove contacts
   localStorage.removeItem(lKey(id));
+  if(gasReady){
+    const payload = encodeURIComponent(JSON.stringify({ action:'deleteLeader', leaderId:id }));
+    fetch(`${GAS_URL}?data=${payload}`).catch(()=>{});
+  }
   renderLeaders();
   loadContacts();
   toast('Líder eliminado');
