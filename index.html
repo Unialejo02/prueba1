@@ -763,6 +763,7 @@ function startApp(){
     document.getElementById('btnAgregarContacto').classList.add('hidden');
     document.getElementById('leaderFilterWrap').classList.remove('hidden');
     loadLeaders();
+    populateLeaderFilter();
   } else if(currentUser.role==='staff'){
     document.getElementById('topSub').textContent = 'Staff · NOVVA VALLE';
     document.getElementById('contactsTitle').textContent = 'Mis registros';
@@ -1066,6 +1067,15 @@ function loadContacts(){
   else { renderContacts(); updateStats(); }
 }
 
+function populateLeaderFilter(){
+  const lf = document.getElementById('leaderFilter');
+  if(!lf || currentUser.role!=='admin') return;
+  const prev = lf.value;
+  lf.innerHTML = '<option value="">👥 Todos los líderes</option>' +
+    leaders.map(l=>`<option value="${l.id}">${escHtml(l.nombre)}${l.tipo==='staff'?' ⭐':''}</option>`).join('');
+  if(prev) lf.value = prev;
+}
+
 function syncFromSheet(){
   const lid = currentUser.role==='admin' ? 'ALL' : currentUser.id;
   fetch(`${GAS_URL}?action=get&lider=${lid}`)
@@ -1079,9 +1089,10 @@ function syncFromSheet(){
           localStorage.setItem(lKey(currentUser.id), JSON.stringify(contacts));
         }
       }
+      populateLeaderFilter();
       renderContacts(); updateStats();
     })
-    .catch(()=>{ renderContacts(); updateStats(); });
+    .catch(()=>{ populateLeaderFilter(); renderContacts(); updateStats(); });
 }
 
 function currentContacts(){
