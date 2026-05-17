@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NOVVA VALLE · Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/common.css">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+<div id="toast"></div>
+<div id="loading" class="hidden">
+  <div class="spinner"></div>
+  <p id="loadingMsg">Guardando...</p>
+</div>
+
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-logo">
+      <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" stroke-dasharray="3,3"/>
+        <circle cx="60" cy="60" r="36" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="60" y1="6" x2="60" y2="18" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round"/>
+        <line x1="60" y1="102" x2="60" y2="114" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round"/>
+        <line x1="6" y1="60" x2="18" y2="60" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round"/>
+        <line x1="102" y1="60" x2="114" y2="60" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round"/>
+        <path d="M52,25 C50,24 47,25 45,27 C43,29 42,32 40,34 C38,36 35,37 34,40 C33,43 34,46 33,49 C32,52 30,54 30,57 C30,60 32,62 33,65 C34,68 34,71 36,73 C38,75 41,75 43,77 C45,79 46,82 48,84 C50,86 53,87 55,89 C57,91 58,94 60,95 C62,94 64,91 66,89 C68,87 71,87 73,85 C75,83 75,80 77,78 C79,76 82,75 83,72 C84,69 83,66 84,63 C85,60 87,58 87,55 C87,52 85,50 84,47 C83,44 83,41 81,39 C79,37 76,37 74,35 C72,33 71,30 69,28 C67,26 64,25 62,24 C60,23 57,23 55,23 Z" fill="white" opacity="0.9"/>
+      </svg>
+    </div>
+    <div class="topbar-info">
+      <div class="topbar-title">NOVVA VALLE · Electoral</div>
+      <div class="topbar-sub" id="topSub">Administrador · NOVVA VALLE</div>
+    </div>
+    <div class="topbar-user">
+      <div class="avatar" id="userAvatar">?</div>
+      <span id="userName">Admin</span>
+    </div>
+    <button class="btn-logout" onclick="doLogout()">Salir</button>
+  </div>
+
+  <div class="nav-tabs" id="adminTabs">
+    <div class="nav-tab active" onclick="showAdminTab('contacts',this)">📋 Registros</div>
+    <div class="nav-tab" onclick="showAdminTab('leaders',this)">👥 Credenciales</div>
+    <div class="nav-tab" onclick="showAdminTab('staff',this)">⭐ Staff</div>
+  </div>
+
+  <div class="main">
+    <!-- PANEL CONTACTOS (solo lectura) -->
+    <div id="panelContacts">
+      <div class="stats">
+        <div class="stat-card"><div class="stat-num" id="statTotal">0</div><div class="stat-label">Registros</div></div>
+        <div class="stat-card gold"><div class="stat-num" id="statCert">0</div><div class="stat-label">Con certificado</div></div>
+        <div class="stat-card green"><div class="stat-num" id="statVoted">0</div><div class="stat-label">Confirmados</div></div>
+      </div>
+      <div class="section-head">
+        <h2>Todos los registros</h2>
+      </div>
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input class="search-bar" id="searchInput" placeholder="Buscar por nombre o cédula..." oninput="renderContacts()">
+      </div>
+      <div id="leaderFilterWrap" style="margin-bottom:12px">
+        <select id="leaderFilter" onchange="renderContacts();updateStats()"
+          style="width:100%;padding:9px 14px;border:1.5px solid var(--gray-200);border-radius:var(--r);
+          font-size:13px;font-family:var(--font);color:var(--gray-800);background:white;cursor:pointer">
+          <option value="">👥 Todos los líderes</option>
+        </select>
+      </div>
+      <div class="filter-tabs">
+        <div class="filter-tab active" onclick="setFilter('all',this)">Todos</div>
+        <div class="filter-tab" onclick="setFilter('voted',this)">Confirmados ✓</div>
+        <div class="filter-tab" onclick="setFilter('pending',this)">Pendientes</div>
+        <div class="filter-tab" onclick="setFilter('cert',this)">Con certificado</div>
+      </div>
+      <div class="contacts-list" id="contactsList"></div>
+    </div>
+
+    <!-- PANEL CREDENCIALES -->
+    <div id="panelLeaders" class="hidden">
+      <div class="section-head">
+        <h2>Credenciales</h2>
+        <button class="btn-add" onclick="openLeaderModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14M5 12h14"/></svg>
+          Nueva credencial
+        </button>
+      </div>
+      <div id="migrateWrap" style="margin-bottom:12px">
+        <button class="btn-add" style="background:var(--teal-d);color:white;width:100%;justify-content:center"
+          onclick="migrateLeadersToSheet()">
+          ☁️ Sincronizar al servidor
+        </button>
+      </div>
+      <div class="leader-cards" id="leaderList"></div>
+    </div>
+
+    <!-- PANEL STAFF -->
+    <div id="panelStaff" class="hidden">
+      <div class="section-head">
+        <h2>Vista Staff</h2>
+      </div>
+      <div style="margin-bottom:16px">
+        <select id="staffSelector" onchange="renderStaffView()"
+          style="width:100%;padding:10px 14px;border:1.5px solid var(--gray-200);border-radius:var(--r);
+          font-size:13px;font-family:var(--font);color:var(--gray-800);background:white">
+          <option value="">— Selecciona un miembro Staff —</option>
+        </select>
+      </div>
+      <div id="staffViewContent"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL LÍDER -->
+<div class="modal-overlay hidden" id="leaderModal" onclick="closeIfOutside(event,'leaderModal')">
+  <div class="modal">
+    <div class="modal-title"><div class="dot"></div><span id="leaderModalTitle">Nueva credencial</span></div>
+    <div class="form-group">
+      <label>Nombre completo <span style="color:var(--red)">*</span></label>
+      <input id="lNombre" placeholder="Nombre completo" oninput="toUpper(this)">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Usuario <span style="color:var(--red)">*</span></label>
+        <input id="lUser" placeholder="usuario123" style="text-transform:lowercase" oninput="this.value=this.value.toLowerCase()">
+        <div class="field-hint">Solo letras y números, sin espacios</div>
+        <div class="field-err" id="errLUser">Usuario ya existe</div>
+      </div>
+      <div class="form-group">
+        <label>Contraseña <span style="color:var(--red)">*</span></label>
+        <input id="lPass" placeholder="Contraseña" type="text" style="text-transform:none">
+        <div class="field-hint">Mínimo 6 caracteres</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Zona / Sector asignado</label>
+      <input id="lZona" placeholder="Ej. Comuna 5 - Norte" oninput="toUpper(this)">
+    </div>
+    <div class="form-group">
+      <label>Tipo de credencial <span style="color:var(--red)">*</span></label>
+      <select id="lTipo" onchange="onTipoChange()" style="text-transform:none">
+        <option value="leader">Líder</option>
+        <option value="staff">Staff</option>
+      </select>
+    </div>
+    <div class="form-group hidden" id="staffAsignadoWrap">
+      <label>Staff asignado (encargado)</label>
+      <select id="lStaffAsignado" style="text-transform:none">
+        <option value="">— Sin staff asignado —</option>
+      </select>
+      <div class="field-hint">El staff podrá ver los registros de este líder</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('leaderModal')">Cancelar</button>
+      <button class="btn-save" onclick="saveLeader()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/common.js"></script>
+<script src="../js/api.js"></script>
+<script src="admin.js"></script>
+<script>
+window.onload = () => {
+  if(!checkSession() || currentUser.role !== 'admin'){
+    window.location.href = '../index.html'; return;
+  }
+  document.getElementById('userName').textContent = currentUser.nombre.split(' ')[0];
+  document.getElementById('userAvatar').textContent = currentUser.nombre.charAt(0).toUpperCase();
+  loadLeaders();
+  populateLeaderFilter();
+  if(gasReady){
+    syncFromSheet('admin').then(()=>{ renderContacts(); updateStats(); renderLeaders(); }).catch(()=>{ renderContacts(); updateStats(); renderLeaders(); });
+  } else {
+    renderContacts(); updateStats(); renderLeaders();
+  }
+};
+</script>
+</body>
+</html>
