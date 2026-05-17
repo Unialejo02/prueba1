@@ -866,35 +866,43 @@ function renderStaffView(){
     el.innerHTML=`<div class="empty"><div class="empty-icon">👥</div><h3>Sin líderes asignados</h3><p>Asigna líderes a ${escHtml(staffMember.nombre)} desde Credenciales.</p></div>`;
     return;
   }
-  el.innerHTML = myLeaders.map(l=>{
-    const lc    = contacts.filter(c=>c.lider===l.id);
-    const voted = lc.filter(c=>c.estado==='voted').length;
-    const cert  = lc.filter(c=>c.cert).length;
-    const ini   = l.nombre.charAt(0).toUpperCase();
-    return `<div class="leader-card" style="margin-bottom:10px;flex-direction:column;align-items:flex-start">
-      <div style="display:flex;align-items:center;gap:12px;width:100%">
-        <div class="leader-av">${ini}</div>
-        <div class="leader-info">
-          <div class="leader-name">${escHtml(l.nombre)}</div>
-          <div class="leader-user">@${escHtml(l.user)} ${l.zona?'· '+escHtml(l.zona):''}</div>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;margin-top:10px">
-        <div style="text-align:center;background:var(--gray-50);border-radius:8px;padding:8px;border-top:2px solid var(--teal)">
-          <div style="font-size:20px;font-weight:700;color:var(--teal)">${lc.length}</div>
-          <div style="font-size:10px;color:var(--gray-400)">Registros</div>
-        </div>
-        <div style="text-align:center;background:var(--gray-50);border-radius:8px;padding:8px;border-top:2px solid var(--dark)">
-          <div style="font-size:20px;font-weight:700;color:var(--dark)">${cert}</div>
-          <div style="font-size:10px;color:var(--gray-400)">Con cert.</div>
-        </div>
-        <div style="text-align:center;background:var(--gray-50);border-radius:8px;padding:8px;border-top:2px solid var(--green)">
-          <div style="font-size:20px;font-weight:700;color:var(--green)">${voted}</div>
-          <div style="font-size:10px;color:var(--gray-400)">Confirmados</div>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
+  el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--gray-400);font-size:13px">⏳ Cargando datos reales...</div>';
+  fetch(`${GAS_URL}?action=get&lider=ALL`)
+    .then(r=>r.json())
+    .then(data=>{
+      const allC = data.contacts || [];
+      function leaderCard(l){
+        const lc    = allC.filter(c=>c.lider===l.id);
+        const voted = lc.filter(c=>c.estado==='voted').length;
+        const cert  = lc.filter(c=>c.cert).length;
+        const ini   = l.nombre.charAt(0).toUpperCase();
+        return `<div class="leader-card" style="margin-bottom:10px;flex-direction:column;align-items:flex-start">
+          <div style="display:flex;align-items:center;gap:12px;width:100%">
+            <div class="leader-av">${ini}</div>
+            <div class="leader-info">
+              <div class="leader-name">${escHtml(l.nombre)}</div>
+              <div class="leader-user">@${escHtml(l.user)} ${l.zona?'· '+escHtml(l.zona):''}</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;margin-top:10px">
+            <div style="text-align:center;background:var(--gray-50);border-radius:8px;padding:8px;border-top:2px solid var(--teal)">
+              <div style="font-size:20px;font-weight:700;color:var(--teal)">${lc.length}</div>
+              <div style="font-size:10px;color:var(--gray-400)">Registros</div>
+            </div>
+            <div style="text-align:center;background:var(--gray-50);border-radius:8px;padding:8px;border-top:2px solid var(--dark)">
+              <div style="font-size:20px;font-weight:700;color:var(--dark)">${cert}</div>
+              <div style="font-size:10px;color:var(--gray-400)">Con cert.</div>
+            </div>
+            <div style="text-align:center;background:var(--gray-50);border-radius:8px;padding:8px;border-top:2px solid var(--green)">
+              <div style="font-size:20px;font-weight:700;color:var(--green)">${voted}</div>
+              <div style="font-size:10px;color:var(--gray-400)">Confirmados</div>
+            </div>
+          </div>
+        </div>`;
+      }
+      el.innerHTML = myLeaders.map(leaderCard).join('');
+    })
+    .catch(()=>{ el.innerHTML='<div class="empty"><div class="empty-icon">⚠️</div><h3>Error cargando datos</h3></div>'; });
 }
 
 function openLeaderModal(id=null){
@@ -1076,41 +1084,51 @@ function showStaffTab(tab, el){
 function renderMyLeaders(){
   const el = document.getElementById('myLeadersList');
   if(!el) return;
-  // Leaders assigned to current staff user
   const myLeaders = leaders.filter(l => l.staffAsignado === currentUser.id && l.tipo !== 'staff');
   if(!myLeaders.length){
     el.innerHTML = `<div class="empty"><div class="empty-icon">👥</div><h3>Sin líderes asignados</h3><p>El administrador aún no te ha asignado líderes.</p></div>`;
     return;
   }
-  el.innerHTML = myLeaders.map(l => {
-    const lc    = contacts.filter(c => c.lider === l.id);
-    const voted = lc.filter(c => c.estado === 'voted').length;
-    const cert  = lc.filter(c => c.cert).length;
-    const ini   = l.nombre.charAt(0).toUpperCase();
-    return `<div class="leader-card" style="margin-bottom:10px;flex-direction:column;align-items:flex-start">
-      <div style="display:flex;align-items:center;gap:12px;width:100%">
-        <div class="leader-av">${ini}</div>
-        <div class="leader-info">
-          <div class="leader-name">${escHtml(l.nombre)}</div>
-          <div class="leader-user">@${escHtml(l.user)} ${l.zona?'· '+escHtml(l.zona):''}</div>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;margin-top:10px">
-        <div style="text-align:center;background:var(--gray-50);border-radius:8px;padding:10px;border-top:2px solid var(--teal)">
-          <div style="font-size:22px;font-weight:700;color:var(--teal)">${lc.length}</div>
-          <div style="font-size:10px;color:var(--gray-400);margin-top:2px">Registros</div>
-        </div>
-        <div style="text-align:center;background:var(--gray-50);border-radius:8px;padding:10px;border-top:2px solid var(--dark)">
-          <div style="font-size:22px;font-weight:700;color:var(--dark)">${cert}</div>
-          <div style="font-size:10px;color:var(--gray-400);margin-top:2px">Con cert.</div>
-        </div>
-        <div style="text-align:center;background:var(--gray-50);border-radius:8px;padding:10px;border-top:2px solid var(--green)">
-          <div style="font-size:22px;font-weight:700;color:var(--green)">${voted}</div>
-          <div style="font-size:10px;color:var(--gray-400);margin-top:2px">Confirmados</div>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
+  el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--gray-400);font-size:13px">Cargando datos...</div>';
+
+  // Fetch ALL contacts from sheet to get real stats
+  fetch(`${GAS_URL}?action=get&lider=ALL`)
+    .then(r=>r.json())
+    .then(data=>{
+      const allContacts = data.contacts || [];
+      el.innerHTML = myLeaders.map(l => {
+        const lc    = allContacts.filter(c => c.lider === l.id);
+        const voted = lc.filter(c => c.estado === 'voted').length;
+        const cert  = lc.filter(c => c.cert).length;
+        const ini   = l.nombre.charAt(0).toUpperCase();
+        return `<div class="leader-card" style="margin-bottom:10px;flex-direction:column;align-items:flex-start">
+          <div style="display:flex;align-items:center;gap:12px;width:100%">
+            <div class="leader-av">${ini}</div>
+            <div class="leader-info">
+              <div class="leader-name">${escHtml(l.nombre)}</div>
+              <div class="leader-user">@${escHtml(l.user)} ${l.zona?'· '+escHtml(l.zona):''}</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;margin-top:10px">
+            <div style="text-align:center;background:var(--gray-50);border-radius:8px;padding:10px;border-top:2px solid var(--teal)">
+              <div style="font-size:22px;font-weight:700;color:var(--teal)">${lc.length}</div>
+              <div style="font-size:10px;color:var(--gray-400);margin-top:2px">Registros</div>
+            </div>
+            <div style="text-align:center;background:var(--gray-50);border-radius:8px;padding:10px;border-top:2px solid var(--dark)">
+              <div style="font-size:22px;font-weight:700;color:var(--dark)">${cert}</div>
+              <div style="font-size:10px;color:var(--gray-400);margin-top:2px">Con cert.</div>
+            </div>
+            <div style="text-align:center;background:var(--gray-50);border-radius:8px;padding:10px;border-top:2px solid var(--green)">
+              <div style="font-size:22px;font-weight:700;color:var(--green)">${voted}</div>
+              <div style="font-size:10px;color:var(--gray-400);margin-top:2px">Confirmados</div>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+    })
+    .catch(()=>{
+      el.innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div><h3>Error cargando datos</h3><p>Verifica tu conexión e intenta de nuevo.</p></div>';
+    });
 }
 
 function showAdminTab(tab, el){
