@@ -232,7 +232,90 @@ body{font-family:var(--font);background:var(--gray-50);color:var(--gray-800);min
 .admin-badge{background:var(--gold);color:var(--navy-d);font-size:10px;font-weight:700;
   padding:2px 8px;border-radius:99px;text-transform:uppercase;letter-spacing:.5px}
 
-@media(max-width:400px){.form-row{grid-template-columns:1fr}.stats{gap:8px}.stat-num{font-size:22px}}
+/* ── MOBILE OPTIMIZADO ─────────────────────────────────────── */
+@media(max-width:600px){
+  /* Login más compacto */
+  .login-card{padding:28px 20px}
+  .login-shield{width:48px;height:48px;margin-bottom:10px}
+  .login-logo{margin-bottom:20px}
+  .login-logo h1{font-size:18px}
+
+  /* Topbar más delgado */
+  .topbar{height:50px;padding:0 12px;gap:8px}
+  .topbar-title{font-size:12px}
+  .topbar-sub{font-size:9px}
+  .topbar-user{padding:4px 10px 4px 6px}
+  .topbar-user span{font-size:11px;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .avatar{width:24px;height:24px;font-size:10px}
+  .btn-logout{padding:5px 8px;font-size:11px}
+
+  /* Nav tabs */
+  .nav-tabs{padding:0 8px}
+  .nav-tab{padding:8px 12px;font-size:11px}
+
+  /* Main con menos padding */
+  .main{padding:12px}
+
+  /* Stats más compactas */
+  .stats{gap:6px;margin-bottom:14px}
+  .stat-card{padding:10px 6px}
+  .stat-num{font-size:20px}
+  .stat-label{font-size:9px}
+
+  /* Section head */
+  .section-head{margin-bottom:10px}
+  .section-head h2{font-size:14px}
+  .btn-add{padding:8px 12px;font-size:12px}
+
+  /* Barra de búsqueda */
+  .search-bar{font-size:13px;padding:9px 12px 9px 36px}
+
+  /* Filter tabs */
+  .filter-tabs{gap:6px;margin-bottom:12px}
+  .filter-tab{padding:5px 10px;font-size:11px}
+
+  /* Cards de contacto */
+  .contact-card{padding:12px}
+  .contact-avatar{width:36px;height:36px;font-size:13px}
+  .contact-name{font-size:13px}
+  .contact-doc{font-size:10px}
+  .badge{font-size:9px;padding:3px 8px}
+  .contact-meta{gap:8px;margin-top:8px;padding-top:8px}
+  .meta-item{font-size:10px}
+  .contact-actions{gap:6px;margin-top:10px}
+  .btn-sm{padding:7px 4px;font-size:11px}
+
+  /* Modal */
+  .modal{padding:20px 16px 32px}
+  .modal-title{font-size:15px;margin-bottom:14px}
+  .form-group{margin-bottom:12px}
+  .form-group label{font-size:10px}
+  .form-group input,.form-group select{padding:9px 10px;font-size:13px}
+  .form-row{grid-template-columns:1fr 1fr;gap:8px}
+  .modal-actions{gap:8px;margin-top:16px}
+  .btn-cancel,.btn-save{padding:11px;font-size:13px}
+
+  /* Upload zone */
+  .upload-zone{padding:14px}
+  .upload-zone p{font-size:12px}
+
+  /* Leader cards */
+  .leader-card{padding:12px;gap:10px}
+  .leader-av{width:36px;height:36px;font-size:14px}
+  .leader-name{font-size:13px}
+  .leader-user{font-size:10px}
+  .leader-stats{font-size:10px}
+
+  /* Toast no se corte */
+  #toast{font-size:12px;padding:10px 16px;max-width:90vw;white-space:normal;text-align:center}
+}
+
+@media(max-width:360px){
+  .form-row{grid-template-columns:1fr}
+  .stats{grid-template-columns:repeat(3,1fr)}
+  .stat-num{font-size:18px}
+  .topbar-user span{display:none}
+}
 </style>
 </head>
 <body>
@@ -381,8 +464,8 @@ body{font-family:var(--font);background:var(--gray-50);color:var(--gray-800);min
       </div>
       <div class="form-group">
         <label>N.° documento <span style="color:var(--red)">*</span></label>
-        <input id="fDoc" placeholder="Mínimo 10 dígitos" type="tel" maxlength="12" oninput="onlyNumbers(this)">
-        <div class="field-err" id="errDoc">Mínimo 10 dígitos</div>
+        <input id="fDoc" placeholder="Número de documento" type="tel" maxlength="15" oninput="onlyNumbers(this)">
+        <div class="field-err" id="errDoc">Mínimo 6 dígitos</div>
       </div>
     </div>
 
@@ -853,10 +936,10 @@ function saveContact(){
 
   if(!nombres||!apellidos){ toast('Nombres y apellidos son obligatorios'); return; }
 
-  if(!doc || doc.length < 10){
+  if(!doc || doc.length < 6){
     document.getElementById('errDoc').classList.add('show');
     document.getElementById('fDoc').classList.add('error');
-    toast('El documento debe tener mínimo 10 dígitos');
+    toast('El documento debe tener mínimo 6 dígitos');
     valid = false;
   } else {
     document.getElementById('errDoc').classList.remove('show');
