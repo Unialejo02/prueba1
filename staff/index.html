@@ -179,7 +179,10 @@ window.onload = () => {
   renderContacts(); updateStats();
   // Sync from sheet
   if(gasReady){
-    syncFromSheet('staff').then(()=>{ renderContacts(); updateStats(); }).catch(()=>{});
+    syncFromSheet('staff').then(()=>{
+      renderContacts(); updateStats();
+      renderMyLeaders(); // Fix: update leader stats after sync
+    }).catch(()=>{});
   }
 };
 </script>
