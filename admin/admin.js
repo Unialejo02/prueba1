@@ -5,6 +5,19 @@
 let editLeaderId = null;
 let adminTab = 'contacts';
 
+// ── AUTO-GENERATE USER/PASSWORD ───────────────────────────────
+function onNameInputAutoGen(){
+  if(editLeaderId) return;
+  const pNombre = document.getElementById('lPrimerNombre').value.trim();
+  const sNombre = document.getElementById('lSegundoNombre').value.trim();
+  const pApellido = document.getElementById('lPrimerApellido').value.trim();
+  if(pNombre && pApellido){
+    const existingUsers = leaders.map(l=>l.user);
+    document.getElementById('lUser').value = generateUsername(pNombre, sNombre, pApellido, existingUsers);
+    document.getElementById('lPass').value = generatePassword();
+  }
+}
+
 // ── ADMIN TABS ──────────────────────────────────────────────
 function showAdminTab(tab, el){
   adminTab = tab;
@@ -15,7 +28,10 @@ function showAdminTab(tab, el){
   document.getElementById('panelStaff').classList.add('hidden');
   if(tab==='contacts'){
     document.getElementById('panelContacts').classList.remove('hidden');
-    renderContacts(); updateStats();
+    selectedPersonId = null;
+    document.getElementById('leaderFilter').value = '';
+    renderPersonCards();
+    updateStats();
   } else if(tab==='leaders'){
     document.getElementById('panelLeaders').classList.remove('hidden');
     renderLeaders();
@@ -26,15 +42,72 @@ function showAdminTab(tab, el){
 }
 
 // ── LEADER FILTER ───────────────────────────────────────────
+let selectedPersonId = null;
+
 function populateLeaderFilter(){
   const lf = document.getElementById('leaderFilter');
   if(!lf) return;
   const prev = lf.value;
-  // Fix bug #5: only show leaders, not staff
-  const leadersOnly = leaders.filter(l=>l.tipo==='leader');
-  lf.innerHTML = '<option value="">👥 Todos los líderes</option>' +
-    leadersOnly.map(l=>`<option value="${l.id}">${escHtml(l.nombre)}</option>`).join('');
+  lf.innerHTML = '<option value="">👥 Todos</option>' +
+    leaders.map(l=>`<option value="${l.id}">${escHtml(l.nombre)} (${l.tipo==='staff'?'Staff':'Líder'})</option>`).join('');
   if(prev) lf.value = prev;
+}
+
+function onLeaderFilterChange(){
+  selectedPersonId = document.getElementById('leaderFilter').value || null;
+  if(selectedPersonId){
+    renderContacts();
+  } else {
+    renderPersonCards();
+  }
+  updateStats();
+}
+
+function renderPersonCards(){
+  const q = (document.getElementById('searchInput').value||'').toLowerCase();
+  let groups = groupContactsByPerson(contacts, leaders);
+  if(q) groups = groups.filter(g => g.nombre.toLowerCase().includes(q));
+  const el = document.getElementById('contactsList');
+  if(!groups.length){
+    el.innerHTML=`<div class="empty"><div class="empty-icon">👥</div><h3>Sin personas</h3><p>No hay líderes ni staff registrados.</p></div>`;
+    return;
+  }
+  el.innerHTML = groups.map(g => {
+    const ini = (g.nombre||'').charAt(0).toUpperCase();
+    const tipoBadge = g.tipo==='staff'
+      ? `<span style="background:#e8f4f4;color:var(--teal-d);font-size:9px;font-weight:700;padding:2px 8px;border-radius:99px;text-transform:uppercase">⭐ Staff</span>`
+      : `<span style="background:#f0fdf4;color:#065f46;font-size:9px;font-weight:700;padding:2px 8px;border-radius:99px;text-transform:uppercase">👤 Líder</span>`;
+    return `<div class="contact-card" style="cursor:pointer" onclick="selectPerson('${g.id}')">
+      <div class="contact-header">
+        <div class="contact-avatar">${ini}</div>
+        <div class="contact-info">
+          <div style="display:flex;align-items:center;gap:6px">${tipoBadge}<span class="contact-name">${escHtml(g.nombre)}</span></div>
+          <div class="contact-doc">@${escHtml(g.user)}</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px">
+        <div style="text-align:center;background:var(--gray-50);border-radius:8px;padding:8px;border-top:2px solid var(--teal)">
+          <div style="font-size:18px;font-weight:700;color:var(--teal)">${g.total}</div>
+          <div style="font-size:10px;color:var(--gray-400)">Registros</div>
+        </div>
+        <div style="text-align:center;background:var(--gray-50);border-radius:8px;padding:8px;border-top:2px solid var(--dark)">
+          <div style="font-size:18px;font-weight:700;color:var(--dark)">${g.cert}</div>
+          <div style="font-size:10px;color:var(--gray-400)">Con cert.</div>
+        </div>
+        <div style="text-align:center;background:var(--gray-50);border-radius:8px;padding:8px;border-top:2px solid var(--green)">
+          <div style="font-size:18px;font-weight:700;color:var(--green)">${g.voted}</div>
+          <div style="font-size:10px;color:var(--gray-400)">Confirmados</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function selectPerson(id){
+  selectedPersonId = id;
+  document.getElementById('leaderFilter').value = id;
+  renderContacts();
+  updateStats();
 }
 
 // ── CONTACTS RENDER (solo lectura) ─────────────────────────
@@ -47,9 +120,8 @@ function setFilter(f, el){
 
 function renderContacts(){
   const q = (document.getElementById('searchInput').value||'').toLowerCase();
-  const liderFiltro = document.getElementById('leaderFilter').value;
   let list = [...contacts];
-  if(liderFiltro) list = list.filter(c=>c.lider===liderFiltro);
+  if(selectedPersonId) list = list.filter(c=>c.lider===selectedPersonId);
   if(q) list = list.filter(c=>`${c.nombres} ${c.apellidos}`.toLowerCase().includes(q) || String(c.doc).includes(q));
   if(activeFilter==='voted')   list = list.filter(c=>c.estado==='voted');
   if(activeFilter==='pending') list = list.filter(c=>c.estado!=='voted');
@@ -95,8 +167,7 @@ function renderContacts(){
 }
 
 function updateStats(){
-  const liderFiltro = document.getElementById('leaderFilter') ? document.getElementById('leaderFilter').value : '';
-  const list = liderFiltro ? contacts.filter(c=>c.lider===liderFiltro) : [...contacts];
+  const list = selectedPersonId ? contacts.filter(c=>c.lider===selectedPersonId) : [...contacts];
   document.getElementById('statTotal').textContent = list.length;
   document.getElementById('statCert').textContent  = list.filter(c=>c.cert).length;
   document.getElementById('statVoted').textContent = list.filter(c=>c.estado==='voted').length;
@@ -115,6 +186,30 @@ function onTipoChange(){
   }
 }
 
+function onNivelEducativoChange(){
+  const nivel = document.getElementById('lNivelEducativo').value;
+  const tituloNivelWrap = document.getElementById('tituloNivelWrap');
+  const tituloPregradoWrap = document.getElementById('tituloPregradoWrap');
+  const observacionesWrap = document.getElementById('observacionesEstudiosWrap');
+
+  if(!nivel || nivel === 'Bachiller'){
+    tituloNivelWrap.classList.add('hidden');
+    tituloPregradoWrap.classList.add('hidden');
+    observacionesWrap.classList.add('hidden');
+  } else if(nivel === 'Posgrado'){
+    tituloNivelWrap.classList.remove('hidden');
+    document.querySelector('#tituloNivelWrap label').textContent = '¿Cuál es su título de posgrado?';
+    tituloPregradoWrap.classList.remove('hidden');
+    observacionesWrap.classList.remove('hidden');
+  } else {
+    tituloNivelWrap.classList.remove('hidden');
+    tituloPregradoWrap.classList.add('hidden');
+    observacionesWrap.classList.remove('hidden');
+    const labels = { 'Técnico': '¿Cuál es su título técnico?', 'Tecnólogo': '¿Cuál es su título tecnológico?', 'Pregrado': '¿Cuál es su título de pregrado?' };
+    document.querySelector('#tituloNivelWrap label').textContent = labels[nivel] || 'Título';
+  }
+}
+
 function openLeaderModal(id=null){
   editLeaderId = id;
   document.getElementById('errLUser').classList.remove('show');
@@ -122,28 +217,61 @@ function openLeaderModal(id=null){
     const l = leaders.find(x=>x.id===id);
     if(!l) return;
     document.getElementById('leaderModalTitle').textContent = 'Editar credencial';
-    document.getElementById('lNombre').value = l.nombre;
+    document.getElementById('lPrimerNombre').value = l.primerNombre || '';
+    document.getElementById('lSegundoNombre').value = l.segundoNombre || '';
+    document.getElementById('lPrimerApellido').value = l.primerApellido || '';
+    document.getElementById('lSegundoApellido').value = l.segundoApellido || '';
     document.getElementById('lUser').value   = l.user;
     document.getElementById('lPass').value   = l.pass;
+    document.getElementById('lTipoDoc').value = l.tipoDoc || 'CC';
+    document.getElementById('lDoc').value = l.doc || '';
+    document.getElementById('lCiudad').value = l.ciudad || '';
+    document.getElementById('lDireccion').value = l.direccion || '';
+    document.getElementById('lFechaNacimiento').value = l.fechaNacimiento || '';
+    document.getElementById('lEstado').value = l.estado || '';
+    document.getElementById('lProfesion').value = l.profesion || '';
+    document.getElementById('lNivelEducativo').value = l.nivelEducativo || '';
+    document.getElementById('lTituloNivel').value = l.tituloNivel || '';
+    document.getElementById('lTituloPregrado').value = l.tituloPregrado || '';
+    document.getElementById('lObservacionesEstudios').value = l.observacionesEstudios || '';
     document.getElementById('lZona').value   = l.zona||'';
     document.getElementById('lTipo').value   = l.tipo||'leader';
     onTipoChange();
+    onNivelEducativoChange();
     if(l.staffAsignado) document.getElementById('lStaffAsignado').value = l.staffAsignado;
+    // Hoja de vida preview
+    const hvPreview = document.getElementById('hojaVidaPreview');
+    document.getElementById('lHojaVida').value = '';
+    if(l.hojaVida){
+      hvPreview.innerHTML = `<div class="cert-chip has-file" onclick="viewCertModal(leaders.find(x=>x.id==='${l.id}').hojaVida)">📄 ${escHtml(l.hojaVida.name)} (${fmt(l.hojaVida.size)})</div>`;
+    } else {
+      hvPreview.innerHTML = '';
+    }
   } else {
     document.getElementById('leaderModalTitle').textContent = 'Nueva credencial';
-    ['lNombre','lUser','lPass','lZona'].forEach(i=>document.getElementById(i).value='');
+    ['lPrimerNombre','lSegundoNombre','lPrimerApellido','lSegundoApellido',
+     'lUser','lPass','lDoc','lCiudad','lDireccion','lFechaNacimiento',
+     'lProfesion','lTituloNivel','lTituloPregrado','lObservacionesEstudios','lZona'
+    ].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('lTipoDoc').value = 'CC';
+    document.getElementById('lEstado').value = '';
+    document.getElementById('lNivelEducativo').value = '';
+    document.getElementById('lHojaVida').value = '';
+    document.getElementById('hojaVidaPreview').innerHTML = '';
     document.getElementById('lTipo').value = 'leader';
     onTipoChange();
+    onNivelEducativoChange();
   }
   document.getElementById('leaderModal').classList.remove('hidden');
 }
 
-function saveLeader(){
-  const nombre = document.getElementById('lNombre').value.trim();
+async function saveLeader(){
+  const primerNombre = document.getElementById('lPrimerNombre').value.trim();
+  const primerApellido = document.getElementById('lPrimerApellido').value.trim();
   const user   = document.getElementById('lUser').value.trim().toLowerCase();
   const pass   = document.getElementById('lPass').value.trim();
-  const zona   = document.getElementById('lZona').value.trim();
-  if(!nombre||!user||!pass){ toast('Todos los campos marcados son obligatorios'); return; }
+
+  if(!primerNombre||!primerApellido||!user||!pass){ toast('Todos los campos marcados son obligatorios'); return; }
   if(pass.length<6){ toast('La contraseña debe tener mínimo 6 caracteres'); return; }
 
   const dup = leaders.find(l=>l.user===user && l.id!==editLeaderId);
@@ -155,19 +283,46 @@ function saveLeader(){
   const tipo = document.getElementById('lTipo').value || 'leader';
   const staffAsignado = tipo==='leader' ? (document.getElementById('lStaffAsignado').value||'') : '';
 
-  // Fix bug #10: preserve fecha when editing
-  let fecha = new Date().toLocaleDateString('es-CO');
-  if(editLeaderId){
-    const existing = leaders.find(l=>l.id===editLeaderId);
-    if(existing && existing.fecha) fecha = existing.fecha;
+  // Process hoja de vida
+  const hvInput = document.getElementById('lHojaVida');
+  const hvFile = hvInput && hvInput.files && hvInput.files[0] ? hvInput.files[0] : null;
+  let hojaVida = null;
+  if(hvFile){
+    hojaVida = await processHojaVida(hvFile);
+    if(!hojaVida){ toast('Hoja de vida: solo PDF, máximo 5MB'); return; }
   }
 
-  const leader = {
-    id: editLeaderId || 'L'+Date.now(),
-    nombre, user, pass, zona, tipo, staffAsignado,
-    role: tipo==='staff' ? 'staff' : 'leader',
-    fecha
+  const params = {
+    primerNombre,
+    segundoNombre: document.getElementById('lSegundoNombre').value.trim(),
+    primerApellido,
+    segundoApellido: document.getElementById('lSegundoApellido').value.trim(),
+    tipoDoc: document.getElementById('lTipoDoc').value,
+    doc: document.getElementById('lDoc').value.trim(),
+    ciudad: document.getElementById('lCiudad').value.trim(),
+    direccion: document.getElementById('lDireccion').value.trim(),
+    fechaNacimiento: document.getElementById('lFechaNacimiento').value,
+    estado: document.getElementById('lEstado').value,
+    profesion: document.getElementById('lProfesion').value.trim(),
+    nivelEducativo: document.getElementById('lNivelEducativo').value,
+    tituloNivel: document.getElementById('lTituloNivel').value.trim(),
+    tituloPregrado: document.getElementById('lTituloPregrado').value.trim(),
+    observacionesEstudios: document.getElementById('lObservacionesEstudios').value.trim(),
+    user, pass,
+    zona: document.getElementById('lZona').value.trim(),
+    tipo, staffAsignado,
   };
+
+  let leader;
+  if(editLeaderId){
+    const existing = leaders.find(l=>l.id===editLeaderId);
+    if(hojaVida) params.hojaVida = hojaVida;
+    leader = mergeLeader(existing || { id: editLeaderId, fecha: '' }, params);
+    leader.id = editLeaderId;
+  } else {
+    if(hojaVida) params.hojaVida = hojaVida;
+    leader = createLeader(params);
+  }
 
   if(editLeaderId){
     const idx = leaders.findIndex(l=>l.id===editLeaderId);
@@ -214,8 +369,23 @@ function renderLeaders(){
     return;
   }
 
-  // Fix bug #9: ensure contacts are loaded for stats
-  el.innerHTML = leaders.map(l=>{
+  const q = (document.getElementById('credSearchInput')?.value||'').toLowerCase();
+  let filtered = [...leaders];
+  if(q){
+    filtered = filtered.filter(l =>
+      (l.nombre||'').toLowerCase().includes(q) ||
+      (l.doc||'').includes(q) ||
+      (l.primerNombre||'').toLowerCase().includes(q) ||
+      (l.primerApellido||'').toLowerCase().includes(q)
+    );
+  }
+
+  if(!filtered.length){
+    el.innerHTML=`<div class="empty"><div class="empty-icon">🔍</div><h3>Sin resultados</h3><p>No se encontraron credenciales con "${escHtml(q)}".</p></div>`;
+    return;
+  }
+
+  el.innerHTML = filtered.map(l=>{
     const lContacts = contacts.filter(c=>c.lider===l.id);
     const voted = lContacts.filter(c=>c.estado==='voted').length;
     const cert  = lContacts.filter(c=>c.cert).length;
@@ -244,6 +414,12 @@ function renderLeaders(){
 }
 
 // ── STAFF VIEW ──────────────────────────────────────────────
+function viewLeaderFromStaff(leaderId){
+  const contactsTab = document.querySelector('#adminTabs .nav-tab');
+  if(contactsTab) showAdminTab('contacts', contactsTab);
+  selectPerson(leaderId);
+}
+
 function renderStaffSelector(){
   const staffList = leaders.filter(l=>l.tipo==='staff');
   const ss = document.getElementById('staffSelector');
@@ -270,6 +446,9 @@ function renderStaffView(){
     const voted = lc.filter(c=>c.estado==='voted').length;
     const cert  = lc.filter(c=>c.cert).length;
     const ini   = l.nombre.charAt(0).toUpperCase();
+    const verPerfilBtn = currentUser && currentUser.role === 'admin'
+      ? `<button class="btn-add" style="margin-top:8px;width:100%;justify-content:center;font-size:12px;padding:6px 12px" onclick="viewLeaderFromStaff('${l.id}')">Ver perfil</button>`
+      : '';
     return `<div class="leader-card" style="margin-bottom:10px;flex-direction:column;align-items:flex-start">
       <div style="display:flex;align-items:center;gap:12px;width:100%">
         <div class="leader-av">${ini}</div>
@@ -292,6 +471,7 @@ function renderStaffView(){
           <div style="font-size:10px;color:var(--gray-400)">Confirmados</div>
         </div>
       </div>
+      ${verPerfilBtn}
     </div>`;
   }).join('');
 }
