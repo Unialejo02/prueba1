@@ -288,7 +288,7 @@ window.onload = () => {
   loadLeaders();
   populateLeaderFilter();
   if(gasReady){
-    syncFromSheet('admin').then(()=>{ renderPersonCards(); updateStats(); renderLeaders(); }).catch(()=>{ renderPersonCards(); updateStats(); renderLeaders(); });
+    syncFromSheet('admin').then(()=>{ renderPersonCards(); updateStats(); renderLeaders(); renderStaffView(); }).catch(()=>{ renderPersonCards(); updateStats(); renderLeaders(); renderStaffView(); });
   } else {
     renderPersonCards(); updateStats(); renderLeaders();
   }
