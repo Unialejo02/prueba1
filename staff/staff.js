@@ -1,9 +1,10 @@
 // ═══════════════════════════════════════════════════════════════
-//  STAFF JS — Mis registros + Mis líderes
+//  STAFF JS — Mis registros + Mis líderes + Ver perfil
 // ═══════════════════════════════════════════════════════════════
 
 let editContactId = null;
 let pendingCert = null;
+let selectedLeaderId = null;
 
 // ── TABS ────────────────────────────────────────────────────
 function showStaffTab(tab, el){
@@ -28,12 +29,35 @@ function setFilter(f, el){
   renderContacts();
 }
 
+// ── LEADER FILTER ──────────────────────────────────────────
+function populateLeaderFilter(){
+  const lf = document.getElementById('leaderFilter');
+  if(!lf) return;
+  const myLeaders = leaders.filter(l => l.staffAsignado === currentUser.id && l.tipo !== 'staff');
+  lf.innerHTML = '<option value="">👥 Todos mis registros</option>' +
+    myLeaders.map(l => `<option value="${l.id}">${escHtml(l.nombre)}</option>`).join('');
+}
+
+function onLeaderFilterChange(){
+  selectedLeaderId = document.getElementById('leaderFilter').value || null;
+  renderContacts();
+  updateStats();
+}
+
+function viewLeaderFromStaff(leaderId){
+  selectedLeaderId = leaderId;
+  document.getElementById('leaderFilter').value = leaderId;
+  showStaffTab('myContacts', document.querySelector('#staffTabs .nav-tab'));
+}
+
 // ── CONTACTS RENDER ─────────────────────────────────────────
 // Fix bug #17: staff sees own contacts + assigned leaders' contacts
 function getVisibleContacts(){
   const myLeaders = leaders.filter(l => l.staffAsignado === currentUser.id && l.tipo !== 'staff');
   const liderIds = [currentUser.id, ...myLeaders.map(l=>l.id)];
-  return contacts.filter(c => liderIds.includes(c.lider));
+  let list = contacts.filter(c => liderIds.includes(c.lider));
+  if(selectedLeaderId) list = list.filter(c => c.lider === selectedLeaderId);
+  return list;
 }
 
 function renderContacts(){
@@ -304,6 +328,7 @@ function renderMyLeaders(){
           <div style="font-size:10px;color:var(--gray-400);margin-top:2px">Confirmados</div>
         </div>
       </div>
+      <button class="btn-add" style="margin-top:8px;width:100%;justify-content:center;font-size:12px;padding:6px 12px" onclick="viewLeaderFromStaff('${l.id}')">Ver perfil</button>
     </div>`;
   }).join('');
 }

@@ -60,6 +60,11 @@
           Agregar
         </button>
       </div>
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
+        <select id="leaderFilter" onchange="onLeaderFilterChange()" style="flex:1;padding:8px 12px;border-radius:8px;border:1px solid var(--gray-200);background:white;font-size:13px">
+          <option value="">👥 Todos mis registros</option>
+        </select>
+      </div>
       <div class="search-wrap">
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
         <input class="search-bar" id="searchInput" placeholder="Buscar por nombre o cédula..." oninput="renderContacts()">
@@ -164,6 +169,7 @@ window.onload = () => {
   document.getElementById('userName').textContent = currentUser.nombre.split(' ')[0];
   document.getElementById('userAvatar').textContent = currentUser.nombre.charAt(0).toUpperCase();
   loadLeaders();
+  populateLeaderFilter();
   const myLeaders = leaders.filter(l => l.staffAsignado === currentUser.id && l.tipo !== 'staff');
   const subText = myLeaders.length ? `Staff · ${myLeaders.length} líder${myLeaders.length>1?'es':''} asignados` : 'Staff · NOVVA VALLE';
   document.getElementById('topSub').textContent = subText;

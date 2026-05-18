@@ -48,7 +48,7 @@ Expandir el formulario de líder con datos personales completos, cambiar la pág
 
 29. Como administrador, quiero ver un botón "Ver perfil" junto a cada líder en la lista de líderes a cargo de un staff, para navegar a su perfil.
 30. Como administrador, quiero que al hacer clic en "Ver perfil" se abra la sección Registros con ese líder pre-filtrado, para ver todos sus registros como si lo buscara directamente.
-31. Como administrador, quiero que esta opción de "Ver perfil" desde staff solo esté disponible para mi rol (admin), no para otros roles del sistema.
+31. Como administrador y staff, quiero que esta opción de "Ver perfil" desde staff esté disponible para los roles admin y staff, para que ambos puedan supervisar los registros de los líderes asignados.
 
 ### Sección 4: Credenciales
 
