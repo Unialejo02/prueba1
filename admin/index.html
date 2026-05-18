@@ -118,7 +118,7 @@
 
 <!-- MODAL LÍDER -->
 <div class="modal-overlay hidden" id="leaderModal" onclick="closeIfOutside(event,'leaderModal')">
-  <div class="modal">
+  <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-title"><div class="dot"></div><span id="leaderModalTitle">Nueva credencial</span></div>
 
     <!-- Datos Personales -->

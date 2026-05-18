@@ -90,7 +90,7 @@
 
 <!-- MODAL CONTACTO -->
 <div class="modal-overlay hidden" id="contactModal" onclick="closeIfOutside(event,'contactModal')">
-  <div class="modal">
+  <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-title"><div class="dot"></div><span id="contactModalTitle">Nuevo registro</span></div>
     <div class="form-row">
       <div class="form-group">
