@@ -19,7 +19,21 @@ function leadersKey(){ return 'usc_leaders'; }
 
 function loadLeaders(){
   const raw = localStorage.getItem(leadersKey());
-  leaders = raw ? JSON.parse(raw) : [];
+  if(raw){ leaders = JSON.parse(raw); return; }
+  if(typeof parseFullName !== 'function'){ leaders = []; return; }
+  const STAFF_NAMES = [
+    'Diana Isabel Guanga Velasco','Winny Catalina Benavides','Paola Goyes',
+    'Nicolas Duran','Mayerling Giron','Manuela Ramirez','Nicole Caicedo',
+    'Heidy Lorena Castillo Oviedo','Doris Larrota','Alejandro Uni','Jaime Alirio Guanga'
+  ];
+  leaders = [];
+  for(const name of STAFF_NAMES){
+    const p = parseFullName(name);
+    const user = generateUsername(p.primerNombre, p.segundoNombre, p.primerApellido, leaders.map(l=>l.user));
+    const pass = generatePassword();
+    leaders.push(createLeader({ primerNombre:p.primerNombre, segundoNombre:p.segundoNombre, primerApellido:p.primerApellido, segundoApellido:p.segundoApellido, user, pass, tipo:'staff', staffAsignado:'' }));
+  }
+  saveLeaders();
 }
 
 function saveLeaders(){

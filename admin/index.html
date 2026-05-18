@@ -288,6 +288,18 @@ window.onload = () => {
   loadLeaders();
   populateLeaderFilter();
   if(gasReady){
+    // Sync leaders from GAS first (brings Alejandra, Luz, etc.)
+    fetch(`${GAS_URL}?action=getLeaders`).then(r=>r.json()).then(data=>{
+      if(data.leaders && data.leaders.length){
+        const gasIds = new Set(leaders.map(l=>l.id));
+        for(const gl of data.leaders){
+          if(!gasIds.has(gl.id)) leaders.push(gl);
+        }
+        saveLeaders();
+        populateLeaderFilter();
+      }
+    }).catch(()=>{});
+    // Then sync contacts
     syncFromSheet('admin').then(()=>{ renderPersonCards(); updateStats(); renderLeaders(); renderStaffView(); }).catch(()=>{ renderPersonCards(); updateStats(); renderLeaders(); renderStaffView(); });
   } else {
     renderPersonCards(); updateStats(); renderLeaders();

@@ -139,6 +139,34 @@ function groupContactsByPerson(contacts, leaders) {
   });
 }
 
+function classifyRecords(leaders, preserveNames) {
+  const names = (preserveNames || []).map(n => n.toLowerCase());
+  const toPreserve = [];
+  const toDelete = [];
+  for (const l of (leaders || [])) {
+    const words = (l.nombre || '').toLowerCase().split(/\s+/);
+    const matches = names.some(n => words.some(w => w === n));
+    if (matches) toPreserve.push(l);
+    else toDelete.push(l);
+  }
+  return { toPreserve, toDelete };
+}
+
+function parseFullName(fullName) {
+  const parts = (fullName || '').trim().split(/\s+/).filter(p => p.length > 0);
+  if (parts.length === 0) return { primerNombre: '', segundoNombre: '', primerApellido: '', segundoApellido: '' };
+  if (parts.length === 1) return { primerNombre: parts[0], segundoNombre: '', primerApellido: '', segundoApellido: '' };
+  if (parts.length === 2) return { primerNombre: parts[0], segundoNombre: '', primerApellido: parts[1], segundoApellido: '' };
+  if (parts.length === 3) return { primerNombre: parts[0], segundoNombre: parts[1], primerApellido: parts[2], segundoApellido: '' };
+  return { primerNombre: parts[0], segundoNombre: parts[1], primerApellido: parts[2], segundoApellido: parts.slice(3).join(' ') };
+}
+
+function extractCredentials(leaders) {
+  return (leaders || [])
+    .filter(l => l.user && l.pass)
+    .map(l => ({ nombre: l.nombre, user: l.user, pass: l.pass }));
+}
+
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { buildFullName, createLeader, mergeLeader, normalizeName, generateUsername, generatePassword, processHojaVida, groupContactsByPerson };
+  module.exports = { buildFullName, createLeader, mergeLeader, normalizeName, generateUsername, generatePassword, processHojaVida, groupContactsByPerson, classifyRecords, parseFullName, extractCredentials };
 }
