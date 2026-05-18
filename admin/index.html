@@ -59,13 +59,13 @@
       </div>
       <div class="search-wrap">
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-        <input class="search-bar" id="searchInput" placeholder="Buscar por nombre o cédula..." oninput="renderContacts()">
+        <input class="search-bar" id="searchInput" placeholder="Buscar por nombre o cédula..." oninput="selectedPersonId?renderContacts():renderPersonCards()">
       </div>
       <div id="leaderFilterWrap" style="margin-bottom:12px">
-        <select id="leaderFilter" onchange="renderContacts();updateStats()"
+        <select id="leaderFilter" onchange="onLeaderFilterChange()"
           style="width:100%;padding:9px 14px;border:1.5px solid var(--gray-200);border-radius:var(--r);
           font-size:13px;font-family:var(--font);color:var(--gray-800);background:white;cursor:pointer">
-          <option value="">👥 Todos los líderes</option>
+          <option value="">👥 Todos</option>
         </select>
       </div>
       <div class="filter-tabs">
@@ -92,6 +92,10 @@
           ☁️ Sincronizar al servidor
         </button>
       </div>
+      <div class="search-wrap" style="margin-bottom:12px">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input class="search-bar" id="credSearchInput" placeholder="Buscar por nombre o documento..." oninput="renderLeaders()">
+      </div>
       <div class="leader-cards" id="leaderList"></div>
     </div>
 
@@ -116,10 +120,124 @@
 <div class="modal-overlay hidden" id="leaderModal" onclick="closeIfOutside(event,'leaderModal')">
   <div class="modal">
     <div class="modal-title"><div class="dot"></div><span id="leaderModalTitle">Nueva credencial</span></div>
-    <div class="form-group">
-      <label>Nombre completo <span style="color:var(--red)">*</span></label>
-      <input id="lNombre" placeholder="Nombre completo" oninput="toUpper(this)">
+
+    <!-- Datos Personales -->
+    <div style="font-size:11px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:1px;margin:12px 0 6px">Datos Personales</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Primer nombre <span style="color:var(--red)">*</span></label>
+        <input id="lPrimerNombre" placeholder="Primer nombre" oninput="toUpper(this);onNameInputAutoGen()">
+      </div>
+      <div class="form-group">
+        <label>Segundo nombre</label>
+        <input id="lSegundoNombre" placeholder="Segundo nombre (opcional)" oninput="toUpper(this);onNameInputAutoGen()">
+      </div>
     </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Primer apellido <span style="color:var(--red)">*</span></label>
+        <input id="lPrimerApellido" placeholder="Primer apellido" oninput="toUpper(this);onNameInputAutoGen()">
+      </div>
+      <div class="form-group">
+        <label>Segundo apellido</label>
+        <input id="lSegundoApellido" placeholder="Segundo apellido (opcional)" oninput="toUpper(this)">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Tipo de documento</label>
+        <select id="lTipoDoc" style="text-transform:none">
+          <option value="CC">CC - Cédula de ciudadanía</option>
+          <option value="TI">TI - Tarjeta de identidad</option>
+          <option value="CE">CE - Cédula de extranjería</option>
+          <option value="PA">PA - Pasaporte</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Número de documento</label>
+        <input id="lDoc" placeholder="Número de documento">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Fecha de nacimiento</label>
+      <input id="lFechaNacimiento" type="date">
+    </div>
+
+    <!-- Ubicación -->
+    <div style="font-size:11px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:1px;margin:12px 0 6px">Ubicación</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Ciudad de residencia</label>
+        <input id="lCiudad" placeholder="Ciudad" oninput="toUpper(this)">
+      </div>
+      <div class="form-group">
+        <label>Dirección de residencia</label>
+        <input id="lDireccion" placeholder="Dirección" oninput="toUpper(this)">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Zona / Sector asignado</label>
+      <input id="lZona" placeholder="Ej. Comuna 5 - Norte" oninput="toUpper(this)">
+    </div>
+
+    <!-- Formación Académica -->
+    <div style="font-size:11px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:1px;margin:12px 0 6px">Formación Académica</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Nivel educativo</label>
+        <select id="lNivelEducativo" onchange="onNivelEducativoChange()" style="text-transform:none">
+          <option value="">— Seleccionar —</option>
+          <option value="Bachiller">Bachiller</option>
+          <option value="Técnico">Técnico</option>
+          <option value="Tecnólogo">Tecnólogo</option>
+          <option value="Pregrado">Pregrado</option>
+          <option value="Posgrado">Posgrado</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Profesión</label>
+        <input id="lProfesion" placeholder="Profesión" oninput="toUpper(this)">
+      </div>
+    </div>
+    <div class="form-group hidden" id="tituloNivelWrap">
+      <label>Título</label>
+      <input id="lTituloNivel" placeholder="Título" oninput="toUpper(this)">
+    </div>
+    <div class="form-group hidden" id="tituloPregradoWrap">
+      <label>¿Cuál fue su título de pregrado?</label>
+      <input id="lTituloPregrado" placeholder="Título de pregrado" oninput="toUpper(this)">
+    </div>
+    <div class="form-group hidden" id="observacionesEstudiosWrap">
+      <label>Observaciones / Estudios adicionales</label>
+      <textarea id="lObservacionesEstudios" rows="3" placeholder="Si tiene otros estudios o certificaciones, puede describirlos aquí (opcional)" style="resize:vertical;font-family:var(--font);font-size:13px;padding:10px;border:1.5px solid var(--gray-200);border-radius:var(--r);width:100%"></textarea>
+    </div>
+
+    <!-- Estado Laboral -->
+    <div style="font-size:11px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:1px;margin:12px 0 6px">Estado</div>
+    <div class="form-group">
+      <label>Estado</label>
+      <select id="lEstado" style="text-transform:none">
+        <option value="">— Seleccionar —</option>
+        <option value="Pendiente">Pendiente</option>
+        <option value="PSE contratado">PSE contratado</option>
+        <option value="PSE en proceso">PSE en proceso</option>
+        <option value="Contratado-privado">Contratado-privado</option>
+        <option value="Estudiante">Estudiante</option>
+        <option value="Nombrado">Nombrado</option>
+        <option value="Amigos">Amigos</option>
+      </select>
+    </div>
+
+    <!-- Adjuntos -->
+    <div style="font-size:11px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:1px;margin:12px 0 6px">Adjuntos</div>
+    <div class="form-group">
+      <label>Hoja de vida (PDF, máx. 5MB)</label>
+      <input id="lHojaVida" type="file" accept="application/pdf" style="font-size:13px">
+      <div id="hojaVidaPreview" style="margin-top:6px"></div>
+    </div>
+
+    <!-- Acceso -->
+    <div style="font-size:11px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:1px;margin:12px 0 6px">Acceso</div>
     <div class="form-row">
       <div class="form-group">
         <label>Usuario <span style="color:var(--red)">*</span></label>
@@ -132,10 +250,6 @@
         <input id="lPass" placeholder="Contraseña" type="text" style="text-transform:none">
         <div class="field-hint">Mínimo 6 caracteres</div>
       </div>
-    </div>
-    <div class="form-group">
-      <label>Zona / Sector asignado</label>
-      <input id="lZona" placeholder="Ej. Comuna 5 - Norte" oninput="toUpper(this)">
     </div>
     <div class="form-group">
       <label>Tipo de credencial <span style="color:var(--red)">*</span></label>
@@ -159,6 +273,7 @@
 </div>
 
 <script src="../js/common.js"></script>
+<script src="../js/leader-model.js"></script>
 <script src="../js/auth.js"></script>
 <script src="../js/api.js"></script>
 <script src="admin.js"></script>
@@ -173,9 +288,9 @@ window.onload = () => {
   loadLeaders();
   populateLeaderFilter();
   if(gasReady){
-    syncFromSheet('admin').then(()=>{ renderContacts(); updateStats(); renderLeaders(); }).catch(()=>{ renderContacts(); updateStats(); renderLeaders(); });
+    syncFromSheet('admin').then(()=>{ renderPersonCards(); updateStats(); renderLeaders(); }).catch(()=>{ renderPersonCards(); updateStats(); renderLeaders(); });
   } else {
-    renderContacts(); updateStats(); renderLeaders();
+    renderPersonCards(); updateStats(); renderLeaders();
   }
 };
 </script>
