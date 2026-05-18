@@ -9,3 +9,13 @@ desktop.ini
 
 # Logs
 *.log
+
+# Dependencies
+node_modules/
+
+# Test screenshots
+admin-test.png
+login-test.png
+
+# Playwright
+.playwright-mcp/
