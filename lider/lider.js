@@ -4,6 +4,7 @@
 
 let editContactId = null;
 let pendingCert = null;
+let cascadeWidget = null;
 
 // ── FILTER ──────────────────────────────────────────────────
 function setFilter(f, el){
@@ -81,7 +82,12 @@ function openContactModal(id=null){
   document.getElementById('certUploadZone').classList.remove('hidden');
   document.getElementById('errDoc').classList.remove('show');
   document.getElementById('errCel').classList.remove('show');
-  document.getElementById('certInput').value = ''; // Fix bug #28: reset file input
+  document.getElementById('certInput').value = '';
+
+  // Init cascade widget
+  document.getElementById('barrioContainer').classList.add('hidden');
+  document.getElementById('fBarrio').value = '';
+  document.getElementById('fComuna').value = '';
 
   if(id){
     const c = contacts.find(x=>x.id===id);
@@ -92,19 +98,119 @@ function openContactModal(id=null){
     document.getElementById('fTipoDoc').value  = c.tipoDoc||'CC';
     document.getElementById('fDoc').value      = c.doc||'';
     document.getElementById('fCel').value      = c.celular||'';
-    document.getElementById('fMunicipio').value= c.municipio||'';
-    document.getElementById('fBarrio').value   = c.barrio||'';
-    document.getElementById('fPuesto').value   = c.puesto||'';
     document.getElementById('fEstado').value   = c.estado||'pending';
     if(c.cert) showCertPreview(c.cert.name, c.cert.size, null, true);
+    // Restore cascade from saved location data
+    cascadeWidget = createCascadeWidget('cascadeContainer', onCascadeChange);
+    if(c.departamento || c.municipio){
+      let st = cascadeWidget.getState();
+      const deptCode = c.departamentoCodigo || findDeptCode(c.departamento);
+      if(deptCode){ st = selectDepartment(st, deptCode); }
+      if(c.municipioCodigo || c.municipio){
+        const munCode = c.municipioCodigo || findMunCode(st.municipalities, c.municipio);
+        if(munCode){ st = selectMunicipality(st, munCode); }
+      }
+      if(c.puestoCodigo || c.puesto){
+        const statCode = c.puestoCodigo || findStationCode(st.votingStations, c.puesto);
+        if(statCode){ st = selectVotingStation(st, statCode); }
+      }
+      cascadeWidget = createCascadeWidget('cascadeContainer', onCascadeChange);
+      // Re-apply selections through widget
+      applyCascadeSelection(deptCode, c.municipioCodigo || findMunCodeByName(deptCode, c.municipio), c.puestoCodigo || findStationCodeByName(c.municipioCodigo || findMunCodeByName(deptCode, c.municipio), c.puesto));
+    }
+    if(c.barrio){ document.getElementById('fBarrio').value = c.barrio; }
+    if(c.comuna){ document.getElementById('fComuna').value = 'Comuna ' + c.comuna; }
+    if(c.municipioCodigo === '76001' || (c.municipio && c.municipio.toUpperCase() === 'CALI')){
+      document.getElementById('barrioContainer').classList.remove('hidden');
+    }
   } else {
     document.getElementById('contactModalTitle').textContent='Nuevo registro';
-    ['fNombres','fApellidos','fDoc','fCel','fMunicipio','fBarrio','fPuesto'].forEach(i=>document.getElementById(i).value='');
+    ['fNombres','fApellidos','fDoc','fCel'].forEach(i=>document.getElementById(i).value='');
     document.getElementById('fTipoDoc').value='CC';
     document.getElementById('fEstado').value='pending';
+    cascadeWidget = createCascadeWidget('cascadeContainer', onCascadeChange);
   }
   document.getElementById('contactModal').classList.remove('hidden');
   document.getElementById('fNombres').focus();
+}
+
+function onCascadeChange(state){
+  if(state.municipality === '76001'){
+    document.getElementById('barrioContainer').classList.remove('hidden');
+  } else {
+    document.getElementById('barrioContainer').classList.add('hidden');
+    document.getElementById('fBarrio').value = '';
+    document.getElementById('fComuna').value = '';
+  }
+}
+
+function onBarrioInput(value){
+  const list = document.getElementById('barrioList');
+  const q = (value||'').toLowerCase();
+  if(!q){ list.classList.add('hidden'); return; }
+  const results = searchBarriosCali(q);
+  list.innerHTML = '';
+  results.slice(0, 20).forEach(b => {
+    const opt = document.createElement('div');
+    opt.className = 'cascade-option';
+    opt.textContent = b.name + ' (C' + b.comuna + ')';
+    opt.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      document.getElementById('fBarrio').value = b.name;
+      document.getElementById('fComuna').value = 'Comuna ' + b.comuna;
+      list.classList.add('hidden');
+    });
+    list.appendChild(opt);
+  });
+  list.classList.remove('hidden');
+}
+
+function applyCascadeSelection(deptCode, munCode, stationCode){
+  cascadeWidget = createCascadeWidget('cascadeContainer', onCascadeChange);
+  if(!deptCode) return;
+  let state = selectDepartment(initCascade(), deptCode);
+  state = { department: state.department, municipality: state.municipality, votingStation: state.votingStation, municipalities: state.municipalities, votingStations: state.votingStations };
+  if(munCode){
+    const munState = selectMunicipality(state, munCode);
+    state = munState;
+  }
+  if(stationCode){
+    const stState = selectVotingStation(state, stationCode);
+    state = stState;
+  }
+}
+
+function findDeptCode(name){
+  if(!name) return null;
+  const depts = getDepartments();
+  const found = depts.find(d => d.name.toLowerCase() === name.toLowerCase());
+  return found ? found.code : null;
+}
+
+function findMunCode(municipalities, name){
+  if(!name || !municipalities.length) return null;
+  const found = municipalities.find(m => m.name.toLowerCase() === name.toLowerCase());
+  return found ? found.code : null;
+}
+
+function findStationCode(votingStations, name){
+  if(!name || !votingStations.length) return null;
+  const found = votingStations.find(s => s.name.toLowerCase() === name.toLowerCase());
+  return found ? found.code : null;
+}
+
+function findMunCodeByName(deptCode, name){
+  if(!deptCode || !name) return null;
+  const muns = getMunicipalities(deptCode);
+  const found = muns.find(m => m.name.toLowerCase() === name.toLowerCase());
+  return found ? found.code : null;
+}
+
+function findStationCodeByName(munCode, name){
+  if(!munCode || !name) return null;
+  const stations = getVotingStations(munCode);
+  const found = stations.find(s => s.name.toLowerCase() === name.toLowerCase());
+  return found ? found.code : null;
 }
 
 function saveContact(){
@@ -148,6 +254,10 @@ function saveContact(){
   }
   const prevContact = editContactId ? contacts.find(c=>c.id===editContactId) : null;
 
+  const cascadeState = cascadeWidget ? cascadeWidget.getState() : initCascade();
+  const barrioName = (document.getElementById('fBarrio').value || '').trim().toUpperCase();
+  const loc = buildLocationData(cascadeState, barrioName);
+
   const contact = {
     id: editContactId || 'C'+Date.now(),
     lider: (prevContact && prevContact.lider) || currentUser.id,
@@ -155,9 +265,14 @@ function saveContact(){
     nombres, apellidos,
     tipoDoc: document.getElementById('fTipoDoc').value,
     doc, celular,
-    municipio: document.getElementById('fMunicipio').value.trim().toUpperCase(),
-    barrio: document.getElementById('fBarrio').value.trim().toUpperCase(),
-    puesto: document.getElementById('fPuesto').value.trim().toUpperCase(),
+    departamento: loc.departamento,
+    departamentoCodigo: cascadeState.department || '',
+    municipio: loc.municipio,
+    municipioCodigo: cascadeState.municipality || '',
+    puesto: loc.puesto,
+    puestoCodigo: cascadeState.votingStation || '',
+    barrio: loc.barrio,
+    comuna: loc.comuna,
     estado: document.getElementById('fEstado').value,
     cert,
     fecha: (prevContact && prevContact.fecha) || new Date().toLocaleDateString('es-CO'),
