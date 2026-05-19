@@ -65,7 +65,7 @@ function onLeaderFilterChange(){
 
 function renderPersonCards(){
   const q = (document.getElementById('searchInput').value||'').toLowerCase();
-  let groups = groupContactsByPerson(contacts, leaders);
+  let groups = groupContactsByPerson(contacts, leaders).sort((a, b) => b.total - a.total);
   if(q) groups = groups.filter(g => g.nombre.toLowerCase().includes(q));
   const el = document.getElementById('contactsList');
   if(!groups.length){
@@ -370,7 +370,7 @@ function renderLeaders(){
   }
 
   const q = (document.getElementById('credSearchInput')?.value||'').toLowerCase();
-  let filtered = [...leaders];
+  let filtered = sortLeadersByContacts(leaders, contacts);
   if(q){
     filtered = filtered.filter(l =>
       (l.nombre||'').toLowerCase().includes(q) ||
@@ -435,7 +435,7 @@ function renderStaffView(){
   if(!staffId){ el.innerHTML='<div class="empty"><div class="empty-icon">⭐</div><h3>Selecciona un miembro del Staff</h3></div>'; return; }
   const staffMember = leaders.find(l=>l.id===staffId);
   if(!staffMember){ el.innerHTML=''; return; }
-  const myLeaders = leaders.filter(l=>l.staffAsignado===staffId && l.tipo!=='staff');
+  const myLeaders = sortLeadersByContacts(leaders.filter(l=>l.staffAsignado===staffId && l.tipo!=='staff'), contacts);
   if(!myLeaders.length){
     el.innerHTML=`<div class="empty"><div class="empty-icon">👥</div><h3>Sin líderes asignados</h3><p>Asigna líderes a ${escHtml(staffMember.nombre)} desde Credenciales.</p></div>`;
     return;

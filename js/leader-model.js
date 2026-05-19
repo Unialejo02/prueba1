@@ -167,6 +167,14 @@ function extractCredentials(leaders) {
     .map(l => ({ nombre: l.nombre, user: l.user, pass: l.pass }));
 }
 
+function sortLeadersByContacts(leaders, contacts) {
+  const counts = {};
+  for (const c of contacts || []) {
+    counts[c.lider] = (counts[c.lider] || 0) + 1;
+  }
+  return [...(leaders || [])].sort((a, b) => (counts[b.id] || 0) - (counts[a.id] || 0));
+}
+
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { buildFullName, createLeader, mergeLeader, normalizeName, generateUsername, generatePassword, processHojaVida, groupContactsByPerson, classifyRecords, parseFullName, extractCredentials };
+  module.exports = { buildFullName, createLeader, mergeLeader, normalizeName, generateUsername, generatePassword, processHojaVida, groupContactsByPerson, classifyRecords, parseFullName, extractCredentials, sortLeadersByContacts };
 }
