@@ -19,3 +19,12 @@ login-test.png
 
 # Playwright
 .playwright-mcp/
+
+# Test scripts (debug)
+test_*.js
+
+# PRD drafts
+PRD_*.md
+PROPUESTA_*.md
+PROPUESTA_*.pdf
+registraduria-puestos-page.png
