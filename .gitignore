@@ -28,3 +28,10 @@ PRD_*.md
 PROPUESTA_*.md
 PROPUESTA_*.pdf
 registraduria-puestos-page.png
+
+# Legacy data (replaced by geo-catalog.js)
+js/puestos-votacion.js
+
+# Future migration files
+docs/schema.sql
+docs/Code.gs
