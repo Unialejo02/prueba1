@@ -260,3 +260,16 @@ body{font-family:var(--font);background:var(--gray-50);color:var(--gray-800);min
   .stat-num{font-size:18px}
   .topbar-user span{display:none}
 }
+
+/* Cascade widget */
+.cascade-group{position:relative;margin-bottom:12px}
+.cascade-group label{display:block;font-size:12px;font-weight:600;color:var(--gray-400);margin-bottom:4px}
+.cascade-input{width:100%;padding:10px 12px;border:1px solid var(--gray-200);border-radius:10px;font-size:14px;background:var(--white);box-sizing:border-box}
+.cascade-input:disabled{background:var(--gray-50);color:var(--gray-300)}
+.cascade-input:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(0,169,159,.1)}
+.cascade-list{position:absolute;left:0;right:0;top:100%;background:var(--white);border:1px solid var(--gray-200);border-radius:10px;max-height:200px;overflow-y:auto;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,.12);margin-top:2px}
+.cascade-list.hidden{display:none}
+.cascade-option{padding:10px 12px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--gray-50)}
+.cascade-option:hover{background:var(--gray-50)}
+.cascade-option.active{background:var(--teal);color:var(--white);font-weight:600}
+.cascade-empty{padding:12px;text-align:center;color:var(--gray-300);font-size:12px}
