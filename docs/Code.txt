@@ -1,0 +1,603 @@
+// ── TEST ──
+function testScript() {
+  SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Contactos')
+    .getRange('A1').setValue('TEST_OK_' + new Date().toLocaleTimeString());
+  Logger.log('OK');
+}
+
+// ── REORGANIZAR HOJA SIMPLE ──
+function reorganizarSimple() {
+  const ss    = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('Contactos');
+  const lSheet = ss.getSheetByName('Lideres');
+  const data  = sheet.getDataRange().getValues();
+  const lData = lSheet ? lSheet.getDataRange().getValues() : [];
+
+  function getPadrino(liderId) {
+    for (let i = 1; i < lData.length; i++) {
+      if (String(lData[i][0]).trim() === String(liderId).trim()) {
+        const staffId = String(lData[i][7]||'').trim();
+        if (!staffId) return '';
+        for (let j = 1; j < lData.length; j++) {
+          if (String(lData[j][0]).trim() === staffId) return String(lData[j][1]);
+        }
+      }
+    }
+    return '';
+  }
+
+  function fmtDate(raw) {
+    if (!raw) return '';
+    const s = String(raw);
+    if (s.length > 15 || s.includes('GMT')) {
+      const d = new Date(s);
+      if (!isNaN(d.getTime()))
+        return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
+    }
+    return s;
+  }
+
+  const newHeaders = ['Miembro Staff','Líder','Nombres','Apellidos','Tipo Doc','Documento','Celular','Municipio','Barrio','Puesto de Votación','Estado','Certificado','Fecha Registro','_ID','_LíderID','Departamento','Departamento Código','Municipio Código','Puesto Código','Comuna'];
+  const newRows = [newHeaders];
+
+  for (let i = 1; i < data.length; i++) {
+    const r = data[i];
+    const oldDept = r.length > 15 ? String(r[15]||'') : '';
+    const oldDeptCode = r.length > 16 ? String(r[16]||'') : '';
+    const oldMunCode = r.length > 17 ? String(r[17]||'') : '';
+    const oldStationCode = r.length > 18 ? String(r[18]||'') : '';
+    const oldComuna = r.length > 19 ? String(r[19]||'') : '';
+
+    newRows.push([
+      getPadrino(String(r[1])),
+      String(r[2]), String(r[3]), String(r[4]),
+      String(r[5]), String(r[6]), String(r[7]),
+      String(r[8]), String(r[9]), String(r[10]),
+      String(r[11]), r[12], fmtDate(r[13]),
+      String(r[0]), String(r[1]),
+      oldDept, oldDeptCode, oldMunCode, oldStationCode, oldComuna
+    ]);
+  }
+
+  sheet.clearContents();
+  sheet.getRange(1,1,newRows.length,newRows[0].length).setValues(newRows);
+  sheet.getRange(1,1,1,newHeaders.length).setFontWeight('bold').setBackground('#0d6666').setFontColor('#ffffff');
+  sheet.setFrozenRows(1);
+  sheet.setColumnWidth(12,180);
+  sheet.setColumnWidth(13,110);
+  try { sheet.hideColumns(14,2); } catch(e) {}
+
+  for (let i = 1; i < newRows.length; i++) {
+    const certRaw = newRows[i][11];
+    if (certRaw && String(certRaw).startsWith('{')) {
+      try {
+        const c = JSON.parse(String(certRaw));
+        if (c && c.url) {
+          const cell = sheet.getRange(i+1, 12);
+          const label = '📄 Ver certificado';
+          const rt = SpreadsheetApp.newRichTextValue().setText(label).setLinkUrl(0,label.length,c.url.trim()).build();
+          cell.setRichTextValue(rt);
+          cell.setFontColor('#0d6666');
+        }
+      } catch(e) {}
+    }
+  }
+  Logger.log('Listo: ' + (newRows.length-1) + ' filas reorganizadas');
+}
+
+const SHEET_NAME = 'Contactos';
+const LEADERS_SHEET = 'Lideres';
+const FOLDER_NAME = 'NOVVA_VALLE_Archivos';
+
+// Column indices (0-based):
+// 0:Padrino 1:Líder 2:Nombres 3:Apellidos 4:TipoDoc 5:Documento 6:Celular
+// 7:Municipio 8:Barrio 9:Puesto 10:Estado 11:Cert 12:Fecha 13:_ID 14:_LíderID
+// 15:Departamento 16:DepartamentoCódigo 17:MunicipioCódigo 18:PuestoCódigo 19:Comuna
+
+function doGet(e) {
+  try {
+    if (e.parameter.data) {
+      const body = JSON.parse(decodeURIComponent(e.parameter.data));
+      return handleAction(body);
+    }
+    const action = e.parameter.action;
+    const lider  = e.parameter.lider;
+    if (action === 'get')        return respond({ ok: true, contacts: getContacts(lider) });
+    if (action === 'getLeaders') return respond({ ok: true, leaders: getLeaders() });
+    return respond({ ok: true, msg: 'NOVVA VALLE API activa' });
+  } catch(err) {
+    return respond({ ok: false, error: err.message });
+  }
+}
+
+function doPost(e) {
+  try {
+    const raw = e.postData && e.postData.contents ? e.postData.contents : '{}';
+    return handleAction(JSON.parse(raw));
+  } catch(err) {
+    return respond({ ok: false, error: err.message });
+  }
+}
+
+function handleAction(body) {
+  const { action, lider, liderNombre, contact, id } = body;
+  if (action === 'save')        return respond(saveContact(lider, liderNombre, contact));
+  if (action === 'delete')      return respond(deleteContact(lider, id));
+  if (action === 'saveCert')    return respond(handleSaveCert(body));
+  if (action === 'saveLeader')  return respond(saveLeader(body.leader));
+  if (action === 'deleteLeader')return respond(deleteLeader(body.leaderId));
+  if (action === 'getLeaders')  return respond({ ok: true, leaders: getLeaders() });
+  return respond({ ok: false, error: 'Acción no válida' });
+}
+
+// ── ISSUE #23: saveCert ahora devuelve certUrl ──
+function handleSaveCert(body) {
+  try {
+    const { contactId, lider, liderNombre, contactNombre, cert } = body;
+    if (!cert || !cert.base64) return { ok: false, error: 'Sin base64' };
+
+    const saved = saveCertToDrive(contactId, cert, liderNombre, contactNombre);
+    if (!saved || !saved.url) return { ok: false, error: 'No se pudo guardar en Drive' };
+
+    const sheet = getSheet();
+    const data  = sheet.getDataRange().getValues();
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][13]) === String(contactId)) {
+        sheet.getRange(i + 1, 12).setValue(JSON.stringify(saved));
+        setCertLink(sheet, i + 1, saved);
+        // certUrl es lo que el frontend espera (api.js busca d2.certUrl)
+        return { ok: true, url: saved.url, certUrl: saved.url };
+      }
+    }
+    return { ok: false, error: 'Contacto no encontrado en sheet' };
+  } catch(err) {
+    return { ok: false, error: err.message };
+  }
+}
+
+function respond(obj) {
+  return ContentService
+    .createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+// ── SHEET ──────────────────────────────────────────────────────
+function getSheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(SHEET_NAME);
+  if (!sheet) {
+    sheet = ss.insertSheet(SHEET_NAME);
+    const headers = [
+      'Padrino (Staff)', 'Líder', 'Nombres', 'Apellidos',
+      'Tipo Doc', 'Documento', 'Celular', 'Municipio', 'Barrio',
+      'Puesto de Votación', 'Estado', 'Archivos', 'Fecha Registro',
+      'ID', 'Líder ID',
+      'Departamento', 'Departamento Código', 'Municipio Código', 'Puesto Código', 'Comuna'
+    ];
+    sheet.appendRow(headers);
+    sheet.getRange(1, 1, 1, headers.length)
+      .setFontWeight('bold')
+      .setBackground('#0d6666')
+      .setFontColor('#ffffff');
+    sheet.setFrozenRows(1);
+    sheet.setColumnWidth(12, 180);
+    sheet.setColumnWidth(13, 120);
+    try { sheet.hideColumns(14, 2); } catch(e) {}
+  }
+
+  // Ensure new columns exist (backward compatibility with old sheets)
+  const headerRow = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const newCols = ['Departamento', 'Departamento Código', 'Municipio Código', 'Puesto Código', 'Comuna'];
+  const missing = newCols.filter(c => !headerRow.includes(c));
+  if (missing.length > 0) {
+    const allHeaders = headerRow.concat(missing);
+    sheet.getRange(1, 1, 1, allHeaders.length).setValues([allHeaders]);
+    sheet.getRange(1, headerRow.length + 1, 1, missing.length).setFontWeight('bold').setBackground('#0d6666').setFontColor('#ffffff');
+  }
+
+  return sheet;
+}
+
+// ── ISSUE #23: getContacts retorna cert.url + nuevos campos ──
+function getContacts(lider) {
+  const sheet = getSheet();
+  const data  = sheet.getDataRange().getValues();
+  if (data.length <= 1) return [];
+
+  const headers = data[0];
+  function col(name) { const i = headers.indexOf(name); return i >= 0 ? i : -1; }
+
+  return data.slice(1)
+    .filter(row => lider === 'ALL' || String(row[col('Líder ID')]) === String(lider))
+    .map(row => {
+      const c = {
+        id:          String(row[col('ID')]),
+        lider:       String(row[col('Líder ID')]),
+        liderNombre: String(row[col('Líder')]),
+        nombres:     String(row[col('Nombres')]),
+        apellidos:   String(row[col('Apellidos')]),
+        tipoDoc:     String(row[col('Tipo Doc')]),
+        doc:         String(row[col('Documento')]),
+        celular:     String(row[col('Celular')]),
+        municipio:   String(row[col('Municipio')]),
+        barrio:      String(row[col('Barrio')]),
+        puesto:      String(row[col('Puesto de Votación')]),
+        estado:      String(row[col('Estado')]),
+        cert:        parseCert(row[col('Archivos')]),
+        fecha:       String(row[col('Fecha Registro')]),
+      };
+      // New location fields
+      const deptCol = col('Departamento');
+      if (deptCol >= 0) c.departamento = String(row[deptCol] || '');
+      const deptCodeCol = col('Departamento Código');
+      if (deptCodeCol >= 0) c.departamentoCodigo = String(row[deptCodeCol] || '');
+      const munCodeCol = col('Municipio Código');
+      if (munCodeCol >= 0) c.municipioCodigo = String(row[munCodeCol] || '');
+      const stationCodeCol = col('Puesto Código');
+      if (stationCodeCol >= 0) c.puestoCodigo = String(row[stationCodeCol] || '');
+      const comunaCol = col('Comuna');
+      if (comunaCol >= 0) {
+        const comunaVal = row[comunaCol];
+        c.comuna = comunaVal !== '' && comunaVal !== undefined ? Number(comunaVal) : null;
+      }
+      return c;
+    });
+}
+
+function parseCert(raw) {
+  if (!raw || raw === '') return null;
+  try { return JSON.parse(raw); } catch { return null; }
+}
+
+// ── ISSUE #23: saveContact guarda nuevos campos de ubicación ──
+function saveContact(lider, liderNombre, contact) {
+  const sheet = getSheet();
+  const data  = sheet.getDataRange().getValues();
+  const headers = data[0];
+  function col(name) { const i = headers.indexOf(name); return i >= 0 ? i : -1; }
+
+  const contactNombre = ((contact.nombres||'') + '_' + (contact.apellidos||'')).trim();
+  const cert = saveCertToDrive(contact.id, contact.cert, liderNombre, contactNombre);
+
+  const leadersSheet = getLeadersSheet();
+  const leadersData  = leadersSheet.getDataRange().getValues();
+  let padrinoNombre  = '';
+  for (let i = 1; i < leadersData.length; i++) {
+    if (String(leadersData[i][0]).trim() === String(lider).trim()) {
+      const staffId = String(leadersData[i][7]||'').trim();
+      if (staffId) {
+        for (let j = 1; j < leadersData.length; j++) {
+          if (String(leadersData[j][0]).trim() === staffId) {
+            padrinoNombre = String(leadersData[j][1]);
+            break;
+          }
+        }
+      }
+      break;
+    }
+  }
+
+  const now = new Date();
+  const fecha = contact.fecha && !contact.fecha.includes('GMT')
+    ? contact.fecha
+    : `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}`;
+
+  // Build row using header positions
+  const totalCols = Math.max(headers.length, 20);
+  const row = new Array(totalCols).fill('');
+
+  row[col('Padrino (Staff)')] = padrinoNombre;
+  row[col('Líder')] = liderNombre || '';
+  row[col('Nombres')] = contact.nombres || '';
+  row[col('Apellidos')] = contact.apellidos || '';
+  row[col('Tipo Doc')] = contact.tipoDoc || 'CC';
+  row[col('Documento')] = contact.doc || '';
+  row[col('Celular')] = contact.celular || '';
+  row[col('Municipio')] = contact.municipio || '';
+  row[col('Barrio')] = contact.barrio || '';
+  row[col('Puesto de Votación')] = contact.puesto || '';
+  row[col('Estado')] = contact.estado || 'pending';
+  row[col('ID')] = contact.id;
+  row[col('Líder ID')] = lider;
+  row[col('Fecha Registro')] = fecha;
+
+  // New location fields
+  const deptCol = col('Departamento');
+  if (deptCol >= 0) row[deptCol] = contact.departamento || '';
+  const deptCodeCol = col('Departamento Código');
+  if (deptCodeCol >= 0) row[deptCodeCol] = contact.departamentoCodigo || '';
+  const munCodeCol = col('Municipio Código');
+  if (munCodeCol >= 0) row[munCodeCol] = contact.municipioCodigo || '';
+  const stationCodeCol = col('Puesto Código');
+  if (stationCodeCol >= 0) row[stationCodeCol] = contact.puestoCodigo || '';
+  const comunaCol = col('Comuna');
+  if (comunaCol >= 0) row[comunaCol] = contact.comuna || '';
+
+  // Find existing row
+  const targetId = String(contact.id).trim();
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][col('ID')]).trim() === targetId) {
+      const existingCertRaw = data[i][col('Archivos')];
+      const finalCert = cert || parseCert(existingCertRaw);
+      row[col('Archivos')] = finalCert ? JSON.stringify(finalCert) : (existingCertRaw || '');
+      sheet.getRange(i + 1, 1, 1, row.length).setValues([row]);
+      if (finalCert && finalCert.url) setCertLink(sheet, i + 1, finalCert);
+      return { ok: true, updated: true };
+    }
+  }
+
+  // New row
+  row[col('Archivos')] = cert ? JSON.stringify(cert) : '';
+  sheet.appendRow(row.slice(0, headers.length));
+  const last = sheet.getLastRow();
+  sheet.getRange(last, 1, 1, Math.min(row.length, headers.length))
+    .setBackground(last % 2 === 0 ? '#f0f4ff' : '#ffffff');
+  if (cert && cert.url) setCertLink(sheet, last, cert);
+  return { ok: true, created: true };
+}
+
+function setCertLink(sheet, rowIndex, cert) {
+  try {
+    const cell = sheet.getRange(rowIndex, 12);
+    const url = (cert.url || '').trim();
+    if (!url) return;
+    const label = '📄 Ver certificado';
+    const richText = SpreadsheetApp.newRichTextValue()
+      .setText(label)
+      .setLinkUrl(0, label.length, url)
+      .build();
+    cell.setRichTextValue(richText);
+    cell.setFontColor('#1B3A6B');
+  } catch(e) {
+    Logger.log('Error setting link: ' + e.message);
+  }
+}
+
+function deleteContact(lider, id) {
+  const sheet = getSheet();
+  const data  = sheet.getDataRange().getValues();
+  const headers = data[0];
+  const idCol = headers.indexOf('ID');
+  const liderCol = headers.indexOf('Líder ID');
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][idCol]) === String(id) && String(data[i][liderCol]) === String(lider)) {
+      sheet.deleteRow(i + 1);
+      return { ok: true };
+    }
+  }
+  return { ok: false, error: 'No encontrado' };
+}
+
+// ── DRIVE ──────────────────────────────────────────────────────
+function getFolder() {
+  const folders = DriveApp.getFoldersByName(FOLDER_NAME);
+  return folders.hasNext() ? folders.next() : DriveApp.createFolder(FOLDER_NAME);
+}
+
+function saveCertToDrive(contactId, cert, liderNombre, contactNombre) {
+  if (!cert) return null;
+  if (cert.url && !cert.base64) return { name: cert.name, size: cert.size, url: cert.url };
+  if (!cert.base64 || cert.base64 === '') return cert.url ? cert : null;
+
+  try {
+    const folder = getFolder();
+
+    const liderFolderName = liderNombre || 'Sin_Lider';
+    const liderFolders    = folder.getFoldersByName(liderFolderName);
+    const liderFolder     = liderFolders.hasNext() ? liderFolders.next() : folder.createFolder(liderFolderName);
+
+    const ext      = cert.name.includes('.') ? cert.name.split('.').pop() : 'pdf';
+    const safeName = (contactNombre || contactId).replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ ]/g, '_');
+    const fileName = 'certificado_' + safeName + '.' + ext;
+
+    const existing = liderFolder.getFilesByName(fileName);
+    while (existing.hasNext()) existing.next().setTrashed(true);
+
+    const parts    = cert.base64.split(',');
+    const mimeType = parts[0].match(/:(.*?);/)[1];
+    const blob     = Utilities.newBlob(Utilities.base64Decode(parts[1]), mimeType, fileName);
+    const file     = liderFolder.createFile(blob);
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+
+    return {
+      name: fileName,
+      size: cert.size,
+      url:  file.getUrl(),
+      id:   file.getId()
+    };
+  } catch(err) {
+    Logger.log('Error saving to Drive: ' + err.message);
+    return { name: cert.name, size: cert.size, url: '', error: err.message };
+  }
+}
+
+// ── LÍDERES ────────────────────────────────────────────────────
+function getLeadersSheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(LEADERS_SHEET);
+  if (!sheet) {
+    sheet = ss.insertSheet(LEADERS_SHEET);
+    const headers = ['ID', 'Nombre', 'Usuario', 'Contrasena', 'Zona', 'Fecha', 'Tipo', 'StaffAsignado'];
+    sheet.appendRow(headers);
+    sheet.getRange(1, 1, 1, headers.length)
+      .setFontWeight('bold')
+      .setBackground('#1B3A6B')
+      .setFontColor('#ffffff');
+    sheet.setFrozenRows(1);
+  }
+  return sheet;
+}
+
+function getLeaders() {
+  const sheet = getLeadersSheet();
+  const data  = sheet.getDataRange().getValues();
+  if (data.length <= 1) return [];
+  return data.slice(1).map(row => ({
+    id:           String(row[0]),
+    nombre:       String(row[1]),
+    user:         String(row[2]),
+    pass:         String(row[3]),
+    zona:         String(row[4]),
+    fecha:        String(row[5]),
+    tipo:         String(row[6]||'leader'),
+    staffAsignado:String(row[7]||''),
+    role:         String(row[6]||'leader')==='staff' ? 'staff' : 'leader'
+  }));
+}
+
+function saveLeader(leader) {
+  const sheet = getLeadersSheet();
+  const data  = sheet.getDataRange().getValues();
+  const row   = [leader.id, leader.nombre, leader.user, leader.pass, leader.zona||'', leader.fecha||new Date().toLocaleDateString('es-CO'), leader.tipo||'leader', leader.staffAsignado||''];
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]) === String(leader.id)) {
+      sheet.getRange(i + 1, 1, 1, row.length).setValues([row]);
+      return { ok: true, updated: true };
+    }
+  }
+  sheet.appendRow(row);
+  return { ok: true, created: true };
+}
+
+function deleteLeader(leaderId) {
+  const sheet = getLeadersSheet();
+  const data  = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]) === String(leaderId)) {
+      sheet.deleteRow(i + 1);
+      return { ok: true };
+    }
+  }
+  return { ok: false, error: 'Líder no encontrado' };
+}
+
+// ── REPARAR CELDAS CON #ERROR! ──
+function repairCertLinks() {
+  const sheet = getSheet();
+  const data  = sheet.getDataRange().getValues();
+  const headers = data[0];
+  const certCol = headers.indexOf('Archivos');
+  let fixed = 0;
+  for (let i = 1; i < data.length; i++) {
+    const raw = data[i][certCol];
+    if (!raw || raw === '') continue;
+    let cert = null;
+    try { cert = JSON.parse(raw); } catch(e) { continue; }
+    if (cert && cert.url) {
+      setCertLink(sheet, i + 1, cert);
+      fixed++;
+    }
+  }
+  SpreadsheetApp.getUi().alert('Reparadas ' + fixed + ' celdas.');
+}
+
+// ── CONVERTIR JSON A LINKS ──
+function fixJsonCells() {
+  repairCertLinks();
+}
+
+// ── REORGANIZAR HOJA AL NUEVO FORMATO ──
+function reorganizarHoja() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEET_NAME);
+  if (!sheet) { SpreadsheetApp.getUi().alert('No existe la hoja Contactos.'); return; }
+
+  const data = sheet.getDataRange().getValues();
+  if (data.length <= 1) { SpreadsheetApp.getUi().alert('No hay datos.'); return; }
+
+  const header = data[0].map(h => String(h).trim());
+  const isOldFormat = header[0] === 'ID' || header[0] === 'id';
+
+  const lSheet = getLeadersSheet();
+  const lData  = lSheet.getDataRange().getValues();
+
+  function getPadrino(liderId) {
+    for (let i = 1; i < lData.length; i++) {
+      if (String(lData[i][0]).trim() === String(liderId).trim()) {
+        const staffId = String(lData[i][7]||'').trim();
+        if (!staffId) return '';
+        for (let j = 1; j < lData.length; j++) {
+          if (String(lData[j][0]).trim() === staffId) return String(lData[j][1]);
+        }
+      }
+    }
+    return '';
+  }
+
+  function formatDate(raw) {
+    if (!raw) return '';
+    const s = String(raw);
+    if (s.includes('GMT') || s.includes('00:00:00') || s.length > 15) {
+      const d = new Date(s);
+      if (!isNaN(d.getTime())) {
+        return String(d.getDate()).padStart(2,'0') + '/' +
+               String(d.getMonth()+1).padStart(2,'0') + '/' +
+               d.getFullYear();
+      }
+    }
+    return s;
+  }
+
+  const newHeaders = [
+    'Padrino (Staff)', 'Líder', 'Nombres', 'Apellidos',
+    'Tipo Doc', 'Documento', 'Celular', 'Municipio', 'Barrio',
+    'Puesto de Votación', 'Estado', 'Archivos', 'Fecha Registro',
+    'ID', 'Líder ID',
+    'Departamento', 'Departamento Código', 'Municipio Código', 'Puesto Código', 'Comuna'
+  ];
+
+  let newRows = [newHeaders];
+
+  for (let i = 1; i < data.length; i++) {
+    const r = data[i];
+    let id, liderId, liderNombre, nombres, apellidos, tipoDoc, doc, celular, municipio, barrio, puesto, estado, cert, fecha;
+    let departamento='', deptCode='', munCode='', stationCode='', comuna='';
+
+    if (isOldFormat) {
+      id=r[0]; liderId=r[1]; liderNombre=r[2]; nombres=r[3]; apellidos=r[4];
+      tipoDoc=r[5]; doc=r[6]; celular=r[7]; municipio=r[8]; barrio=r[9];
+      puesto=r[10]; estado=r[11]; cert=r[12]; fecha=r[13];
+    } else {
+      id=r[13]; liderId=r[14]; liderNombre=r[1]; nombres=r[2]; apellidos=r[3];
+      tipoDoc=r[4]; doc=r[5]; celular=r[6]; municipio=r[7]; barrio=r[8];
+      puesto=r[9]; estado=r[10]; cert=r[11]; fecha=r[12];
+      if (r.length > 15) departamento = String(r[15]||'');
+      if (r.length > 16) deptCode = String(r[16]||'');
+      if (r.length > 17) munCode = String(r[17]||'');
+      if (r.length > 18) stationCode = String(r[18]||'');
+      if (r.length > 19) comuna = String(r[19]||'');
+    }
+
+    const padrino = getPadrino(String(liderId));
+    newRows.push([
+      padrino, String(liderNombre), String(nombres), String(apellidos),
+      String(tipoDoc), String(doc), String(celular), String(municipio), String(barrio),
+      String(puesto), String(estado), cert, formatDate(fecha),
+      String(id), String(liderId),
+      departamento, deptCode, munCode, stationCode, comuna
+    ]);
+  }
+
+  sheet.clearContents();
+  sheet.getRange(1, 1, newRows.length, newHeaders.length).setValues(newRows);
+  sheet.getRange(1, 1, 1, newHeaders.length)
+    .setFontWeight('bold')
+    .setBackground('#0d6666')
+    .setFontColor('#ffffff');
+  sheet.setFrozenRows(1);
+  sheet.setColumnWidth(12, 180);
+  sheet.setColumnWidth(13, 110);
+  try { sheet.hideColumns(14, 2); } catch(e) {}
+
+  for (let i = 1; i < newRows.length; i++) {
+    const certRaw = newRows[i][11];
+    if (certRaw && String(certRaw).startsWith('{')) {
+      try {
+        const c = JSON.parse(certRaw);
+        if (c && c.url) setCertLink(sheet, i + 1, c);
+      } catch(e) {}
+    }
+  }
+
+  SpreadsheetApp.getUi().alert('✓ Listo. ' + (newRows.length-1) + ' registros reorganizados.');
+}
