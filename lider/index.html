@@ -102,19 +102,19 @@
         <input id="fCel" placeholder="10 dígitos" type="tel" maxlength="10" oninput="onlyNumbers(this)">
         <div class="field-err" id="errCel">Debe tener exactamente 10 dígitos</div>
       </div>
-      <div class="form-group">
-        <label>Municipio</label>
-        <input id="fMunicipio" placeholder="Ciudad" oninput="toUpper(this)">
-      </div>
     </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label>Barrio / Vereda</label>
-        <input id="fBarrio" placeholder="Barrio" oninput="toUpper(this)">
-      </div>
-      <div class="form-group">
-        <label>Puesto de votación</label>
-        <input id="fPuesto" placeholder="Nombre del puesto" oninput="toUpper(this)">
+    <div id="cascadeContainer"></div>
+    <div id="barrioContainer" class="hidden">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Barrio</label>
+          <input id="fBarrio" placeholder="Escribe para buscar barrio..." oninput="onBarrioInput(this.value)" onblur="setTimeout(()=>document.getElementById('barrioList').classList.add('hidden'),150)">
+          <div id="barrioList" class="cascade-list hidden"></div>
+        </div>
+        <div class="form-group">
+          <label>Comuna</label>
+          <input id="fComuna" readonly placeholder="Se asigna automáticamente" style="background:var(--gray-50)">
+        </div>
       </div>
     </div>
     <div class="form-group">
@@ -141,6 +141,10 @@
 
 <script src="../js/common.js"></script>
 <script src="../js/auth.js"></script>
+<script src="../js/cert-sync.js"></script>
+<script src="../js/geo-catalog.js"></script>
+<script src="../js/cascade-logic.js"></script>
+<script src="../js/cascade-widget.js"></script>
 <script src="../js/api.js"></script>
 <script src="lider.js"></script>
 <script>

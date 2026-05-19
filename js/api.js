@@ -3,7 +3,7 @@ function syncFromSheet(role){
     return fetch(`${GAS_URL}?action=get&lider=ALL`)
       .then(r=>r.json())
       .then(data => {
-        if(data.contacts && data.contacts.length) contacts = data.contacts;
+        if(data.contacts && data.contacts.length) contacts = mergeSheetContacts(contacts, data.contacts);
         return contacts;
       });
   } else if(role === 'staff'){
@@ -13,7 +13,7 @@ function syncFromSheet(role){
       .then(r=>r.json())
       .then(data => {
         if(data.contacts && data.contacts.length){
-          contacts = data.contacts.filter(c => liderIds.includes(c.lider));
+          contacts = mergeSheetContacts(contacts, data.contacts.filter(c => liderIds.includes(c.lider)));
           localStorage.setItem(lKey(currentUser.id), JSON.stringify(contacts.filter(c=>c.lider===currentUser.id)));
         }
         return contacts;
@@ -23,7 +23,7 @@ function syncFromSheet(role){
       .then(r=>r.json())
       .then(data => {
         if(data.contacts && data.contacts.length){
-          contacts = data.contacts;
+          contacts = mergeSheetContacts(contacts, data.contacts);
           localStorage.setItem(lKey(currentUser.id), JSON.stringify(contacts));
         }
         return contacts;
@@ -54,7 +54,18 @@ function syncContactToSheet(contact){
         });
         return fetch(GAS_URL, { method:'POST', body: certPayload })
           .then(r2=>r2.json())
-          .then(d2=>{ if(d2.ok) toast('Sincronizado con archivo ✓', 2200); })
+          .then(d2=>{
+            if(!d2.ok) return;
+            if(d2.certUrl){
+              const updated = mergeCertUrl(contact, d2);
+              const gi = contacts.findIndex(c=>c.id===contact.id);
+              if(gi>=0) contacts[gi] = updated;
+              const myContacts = JSON.parse(localStorage.getItem(lKey(contact.lider))||'[]');
+              const li = myContacts.findIndex(c=>c.id===contact.id);
+              if(li>=0){ myContacts[li] = updated; localStorage.setItem(lKey(contact.lider), JSON.stringify(myContacts)); }
+            }
+            toast('Sincronizado con archivo ✓', 2200);
+          })
           .catch(()=>{ toast('Datos guardados, archivo pendiente', 2200); });
       } else {
         toast('Sincronizado ✓', 1800);
