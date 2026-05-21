@@ -35,3 +35,6 @@ js/puestos-votacion.js
 # Future migration files
 docs/schema.sql
 docs/Code.gs
+
+# Instructions with credentials
+instrucciones-alejandro.txt

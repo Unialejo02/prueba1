@@ -180,9 +180,24 @@ window.onload = () => {
   renderContacts(); updateStats();
   // Sync from sheet
   if(gasReady){
-    syncFromSheet('staff').then(()=>{
+    // Sync leaders from GAS first (critical for staff visibility on new devices)
+    fetch(`${GAS_URL}?action=getLeaders`).then(r=>r.json()).then(data=>{
+      if(data.leaders && data.leaders.length){
+        const gasIds = new Set(leaders.map(l=>l.id));
+        for(const gl of data.leaders){
+          if(!gasIds.has(gl.id)) leaders.push(gl);
+        }
+        saveLeaders();
+        populateLeaderFilter();
+        const ml = leaders.filter(l => l.staffAsignado === currentUser.id && l.tipo !== 'staff');
+        document.getElementById('topSub').textContent = ml.length ? `Staff · ${ml.length} líder${ml.length>1?'es':''} asignados` : 'Staff · NOVVA VALLE';
+      }
+    }).catch(()=>{}).then(()=>{
+      return syncFromSheet('staff');
+    }).then(()=>{
       renderContacts(); updateStats();
-      renderMyLeaders(); // Fix: update leader stats after sync
+      renderMyLeaders();
+      populateLeaderFilter();
     }).catch(()=>{});
   }
 };
