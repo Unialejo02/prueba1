@@ -34,6 +34,7 @@ function doLogin(){
   }
 
   // Check sheet
+  showLoading('Verificando credenciales...');
   err.textContent = 'Verificando...';
   const ctrl = new AbortController();
   const t = setTimeout(()=>ctrl.abort(), 10000);
@@ -48,13 +49,16 @@ function doLogin(){
         if(found){
           currentUser = {...found, role: found.tipo==='staff' ? 'staff' : 'leader'};
           sessionStorage.setItem('usc_session', JSON.stringify(currentUser));
+          hideLoading();
           redirectToRole(); return;
         }
       }
+      hideLoading();
       err.textContent = 'Usuario o contraseña incorrectos';
     })
     .catch(()=>{
       clearTimeout(t);
+      hideLoading();
       err.textContent = 'Sin conexión al servidor. Verifica tu internet.';
     });
 }

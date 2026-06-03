@@ -169,18 +169,16 @@ window.onload = () => {
   document.getElementById('app').classList.add('active');
   document.getElementById('userName').textContent = currentUser.nombre.split(' ')[0];
   document.getElementById('userAvatar').textContent = currentUser.nombre.charAt(0).toUpperCase();
+  showLoading('Cargando datos del servidor...');
   loadLeaders();
   populateLeaderFilter();
   const myLeaders = leaders.filter(l => l.staffAsignado === currentUser.id && l.tipo !== 'staff');
   const subText = myLeaders.length ? `Staff · ${myLeaders.length} líder${myLeaders.length>1?'es':''} asignados` : 'Staff · NOVVA VALLE';
   document.getElementById('topSub').textContent = subText;
-  // Load local contacts first
   const raw = localStorage.getItem(lKey(currentUser.id));
   contacts = raw ? JSON.parse(raw) : [];
   renderContacts(); updateStats();
-  // Sync from sheet
   if(gasReady){
-    // Sync leaders from GAS first (critical for staff visibility on new devices)
     fetch(`${GAS_URL}?action=getLeaders`).then(r=>r.json()).then(data=>{
       if(data.leaders && data.leaders.length){
         const gasIds = new Set(leaders.map(l=>l.id));
@@ -198,7 +196,12 @@ window.onload = () => {
       renderContacts(); updateStats();
       renderMyLeaders();
       populateLeaderFilter();
-    }).catch(()=>{});
+      hideLoading();
+    }).catch(()=>{
+      hideLoading();
+    });
+  } else {
+    hideLoading();
   }
 };
 </script>

@@ -155,16 +155,14 @@ window.onload = () => {
   document.getElementById('app').classList.add('active');
   document.getElementById('userName').textContent = currentUser.nombre.split(' ')[0];
   document.getElementById('userAvatar').textContent = currentUser.nombre.charAt(0).toUpperCase();
-  // Show leader info in sub
+  showLoading('Cargando datos del servidor...');
   loadLeaders();
   const staffMember = currentUser.staffAsignado ? leaders.find(l=>l.id===currentUser.staffAsignado) : null;
   const subText = staffMember ? `Líder · ${staffMember.nombre}` : (currentUser.zona ? 'Zona: '+currentUser.zona : 'Líder');
   document.getElementById('topSub').textContent = subText;
-  // Load local contacts first
   const raw = localStorage.getItem(lKey(currentUser.id));
   contacts = raw ? JSON.parse(raw) : [];
   renderContacts(); updateStats();
-  // Sync from sheet
   if(gasReady){
     fetch(`${GAS_URL}?action=getLeaders`).then(r=>r.json()).then(data=>{
       if(data.leaders && data.leaders.length){
@@ -178,7 +176,12 @@ window.onload = () => {
       return syncFromSheet('leader');
     }).then(()=>{
       renderContacts(); updateStats();
-    }).catch(()=>{});
+      hideLoading();
+    }).catch(()=>{
+      hideLoading();
+    });
+  } else {
+    hideLoading();
   }
 };
 </script>

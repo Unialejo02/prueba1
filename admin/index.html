@@ -289,10 +289,10 @@ window.onload = () => {
   document.getElementById('app').classList.add('active');
   document.getElementById('userName').textContent = currentUser.nombre.split(' ')[0];
   document.getElementById('userAvatar').textContent = currentUser.nombre.charAt(0).toUpperCase();
+  showLoading('Cargando datos del servidor...');
   loadLeaders();
   populateLeaderFilter();
   if(gasReady){
-    // Sync leaders from GAS first (brings Alejandra, Luz, etc.)
     fetch(`${GAS_URL}?action=getLeaders`).then(r=>r.json()).then(data=>{
       if(data.leaders && data.leaders.length){
         const gasIds = new Set(leaders.map(l=>l.id));
@@ -302,11 +302,18 @@ window.onload = () => {
         saveLeaders();
         populateLeaderFilter();
       }
-    }).catch(()=>{});
-    // Then sync contacts
-    syncFromSheet('admin').then(()=>{ renderPersonCards(); updateStats(); renderLeaders(); renderStaffView(); }).catch(()=>{ renderPersonCards(); updateStats(); renderLeaders(); renderStaffView(); });
+    }).catch(()=>{}).then(()=>{
+      return syncFromSheet('admin');
+    }).then(()=>{
+      renderPersonCards(); updateStats(); renderLeaders(); renderStaffView();
+      hideLoading();
+    }).catch(()=>{
+      renderPersonCards(); updateStats(); renderLeaders(); renderStaffView();
+      hideLoading();
+    });
   } else {
     renderPersonCards(); updateStats(); renderLeaders();
+    hideLoading();
   }
 };
 </script>
