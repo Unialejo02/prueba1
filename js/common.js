@@ -1,4 +1,4 @@
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbzUVuRZ7v8nSdhIVugz-n9W9rBhmzT1WYpYpLoyuWjR4BD65CaJ1na5w4kcOSGP3VsI/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbzgaw2zyLQPoPPjlq99T1k-FqBd8uBn7NCGXueHgj6-f08M26HHcJosdgBtgzjA3R09/exec';
 const gasReady = GAS_URL !== 'TU_URL_AQUI';
 const ADMIN = { user:'Novvavalle2026', pass:'Cali2026*', nombre:'NOVVA VALLE Admin', id:'ADMIN', role:'admin' };
 
